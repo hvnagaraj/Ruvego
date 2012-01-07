@@ -2,6 +2,7 @@ package com.ruvego.project.client;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 
 import com.google.gwt.maps.client.MapWidget;
@@ -9,6 +10,7 @@ import com.google.gwt.maps.client.Maps;
 import com.google.gwt.maps.client.control.LargeMapControl3D;
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geom.LatLng;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -47,6 +49,8 @@ public class Ruvego implements EntryPoint {
 	static private String PLACE = "Wrong";
 	static private int WITHIN_MILES_INDEX = 5;
 	static private int MIN_PAGE_HEIGHT = 0;
+	
+	static private int boxCount = 0;
 
 	/* Constants */
 	final private static int FOOTER_FIXED_HEIGHT = 22;
@@ -58,8 +62,10 @@ public class Ruvego implements EntryPoint {
 	static private String place;
 	static private String withinRange;
 	static private int timeOfTheDay;
-	
+
 	static private int indent = 15;
+    final private static long DURATION = 1000 * 60 * 60 * 24 * 14; //duration remembering login. 2 weeks in this example.
+    final private static Date expires = new Date(System.currentTimeMillis() + DURATION);
 
 	protected static RootPanel rootPanel = RootPanel.get();
 	static private AbsolutePanel headerPanel = new AbsolutePanel();
@@ -68,23 +74,40 @@ public class Ruvego implements EntryPoint {
 	protected static AbsolutePanel footerEncapPanel = new AbsolutePanel();
 	static private HorizontalPanel timeOfTheactivityResultsPanel = new HorizontalPanel();
 
-	static Image imgLogo;
+	static private Image imgLogo;
+	static private Image imgBox;
 	static private ListBox listBoxWithin;
 	static private SuggestBox suggestBox;
+	
+	static private Label lblBoxCount;
+	static private Label lblBoxText;
 
 	static private MapWidget map;
 	static protected Geocoder geocoder;
 	static private MultiWordSuggestOracle oracle;
-	
+
 	/* Pages objects */
 	protected static RuvegoHomePage homePage = null;
 	static private RuvegoContribute contributePage = null;
+	static private RuvegoAboutPage aboutPage = null;
 
 	static private ResultsFetchAsync resultsFetchService;
 
 	/* Time of the Day Panel */
 	static private CheckBox chkBoxDaytime, chkBoxNightlife;
 	
+	public static void incCount() {
+		boxCount++;
+		lblBoxCount.setText(String.valueOf(boxCount));
+		
+	    Cookies.setCookie("sid", lblBoxCount.getText(), expires, null, "/", false);
+	}
+	
+	public static void decCount() {
+		boxCount--;
+		lblBoxCount.setText(String.valueOf(boxCount));
+	}
+
 	public static int getIndent() {
 		return indent;
 	}
@@ -135,50 +158,54 @@ public class Ruvego implements EntryPoint {
 	public static RootPanel getRootPanel() {
 		return Ruvego.rootPanel;
 	}
+	
+	
 
 
 	public void onModuleLoad() {
 		rootPanel.setSize("100%", "100%");
-		
+
 		resultsFetchService = GWT.create(ResultsFetch.class);
-		
-		authenticateUser();
+
+		//TODO change before commit
+		userAuthenticated();
+		//authenticateUser();
 	}
 
 	private void authenticateUser() {
 		rootPanel.setStyleName("userAuthenticateBG");
 		final DialogBox dialogbox = new DialogBox(false);
-	    dialogbox.setStyleName("userAuthenticationDialogBox");
-	    VerticalPanel dialogBoxContents = new VerticalPanel();
-	    
-	    Image img = new Image("Images/ruvegosmall.png");
+		dialogbox.setStyleName("userAuthenticationDialogBox");
+		VerticalPanel dialogBoxContents = new VerticalPanel();
+
+		Image img = new Image("Images/ruvegosmall.png");
 		img.setSize("140px", "35px");
 		img.setStyleName("imgLogo");
 		dialogBoxContents.add(img);
-		
+
 		dialogbox.setModal(true);
-		
-	    dialogbox.setText("Pre-Beta Testing. User Authentication Required");
-	    HTML message = new HTML("Enter Username");
-	    message.setStyleName("demo-DialogBox-message");
-	    message.setStyleName("userAuthenticationDialogBoxHTML");
-	    
-	    dialogBoxContents.add(message);
-	    
-	    final TextBox textBoxUsername = new TextBox();
-	    textBoxUsername.setWidth("200px");
-	    dialogBoxContents.add(textBoxUsername);
-	    
-	    HTML password = new HTML("Enter Password");
-	    dialogBoxContents.add(password);
-	    password.setStyleName("userAuthenticationDialogBoxHTML");
-	    
-	    final PasswordTextBox textBoxPassword = new PasswordTextBox();
-	    textBoxPassword.setWidth("200px");
-	    dialogBoxContents.add(textBoxPassword);
-	    
+
+		dialogbox.setText("Pre-Beta Testing. User Authentication Required");
+		HTML message = new HTML("Enter Username");
+		message.setStyleName("demo-DialogBox-message");
+		message.setStyleName("userAuthenticationDialogBoxHTML");
+
+		dialogBoxContents.add(message);
+
+		final TextBox textBoxUsername = new TextBox();
+		textBoxUsername.setWidth("200px");
+		dialogBoxContents.add(textBoxUsername);
+
+		HTML password = new HTML("Enter Password");
+		dialogBoxContents.add(password);
+		password.setStyleName("userAuthenticationDialogBoxHTML");
+
+		final PasswordTextBox textBoxPassword = new PasswordTextBox();
+		textBoxPassword.setWidth("200px");
+		dialogBoxContents.add(textBoxPassword);
+
 		final AsyncCallback<Boolean> callbackAuthenticate = new AsyncCallback<Boolean>() {
-			
+
 			@Override
 			public void onSuccess(Boolean result) {
 				if (result == true) {
@@ -188,28 +215,28 @@ public class Ruvego implements EntryPoint {
 					Window.alert("Invalid Username or Password. Access Denied");
 				}
 			}
-			
+
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Server is busy. Please try again after some time");
 			}
 		};
-	    
-	    ClickHandler clickHandler = new ClickHandler() {
-			
+
+		ClickHandler clickHandler = new ClickHandler() {
+
 			@Override
 			public void onClick(ClickEvent event) {
-				  resultsFetchService.authenticateUser(textBoxUsername.getText(), textBoxPassword.getText(), callbackAuthenticate);
+				resultsFetchService.authenticateUser(textBoxUsername.getText(), textBoxPassword.getText(), callbackAuthenticate);
 			}
 		};
 
-	    Button button = new Button("Login", clickHandler);
-	    button.setStyleName("button");
-	    button.setPixelSize(70, 30);
-	    dialogBoxContents.add(button);
-	    dialogbox.setWidget(dialogBoxContents);
-	    dialogbox.center();
-	    dialogBoxContents.setSpacing(4);
+		Button button = new Button("Login", clickHandler);
+		button.setStyleName("button");
+		button.setPixelSize(70, 30);
+		dialogBoxContents.add(button);
+		dialogbox.setWidget(dialogBoxContents);
+		dialogbox.center();
+		dialogBoxContents.setSpacing(4);
 	}
 
 	private void userAuthenticated() {
@@ -259,30 +286,33 @@ public class Ruvego implements EntryPoint {
 
 		if (History.getToken().equalsIgnoreCase("contributePage")) {
 			formContributePage();
-			rootPanel.setStyleName("pageBackground");
 		} else if (History.getToken().equalsIgnoreCase("homePage")) {
-			rootPanel.setStyleName("pageBackground");
 			formHomePage();
 			History.newItem("homePage");
+		} else if (History.getToken().equalsIgnoreCase("aboutPage")) {
+			formAboutPage();
+			History.newItem("aboutPage");
+		} else if (History.getToken().equalsIgnoreCase("boxView")) {
+			formAboutPage();
+			History.newItem("boxView");
 		} else {
 			System.err.println("Error: Invalid token in the URL. Going to default page");
-			rootPanel.setStyleName("pageBackground");
 			formHomePage();
 			History.newItem("homePage");
 		}
 
+		rootPanel.setStyleName("pageBackground");
 
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			public void onValueChange(ValueChangeEvent<String> event) {
 				String historyToken = event.getValue();
-				// Parse the history token
 				try {
 					if (historyToken.contains("contributePage")) {
 						formContributePage();
-						rootPanel.setStyleName("pageBackground");
 					} else if (historyToken.contains("homePage")) {
 						formHomePage();
-						rootPanel.setStyleName("pageBackground");
+					} else if (historyToken.contains("aboutPage")) {
+						formAboutPage();
 					}
 
 				} catch (IndexOutOfBoundsException e) {
@@ -292,11 +322,8 @@ public class Ruvego implements EntryPoint {
 		});
 
 		Window.addResizeHandler(new ResizeHandler() {
-
 			public void onResize(ResizeEvent event) {
-				if (History.getToken().equalsIgnoreCase("contributePage")) {
-					RuvegoContribute.ruvegoContributeAlignments();
-				} else if (History.getToken().equalsIgnoreCase("homePage")) {
+				if (History.getToken().equalsIgnoreCase("homePage")) {
 					ruvegoPanelAlignments();
 				}
 			}
@@ -330,7 +357,7 @@ public class Ruvego implements EntryPoint {
 	private void setMapsPanel() {
 		rootPanel.add(mapsPanel);	
 	}
-	
+
 	protected void pageAlignments() {
 	} 
 
@@ -343,15 +370,15 @@ public class Ruvego implements EntryPoint {
 
 		rootPanel.setWidgetPosition(headerPanel, 0, 0);
 		rootPanel.setWidgetPosition(secondHeaderPanel, 0, headerPanel.getOffsetHeight());
-		secondHeaderPanel.setWidgetPosition(timeOfTheactivityResultsPanel, width - timeOfTheactivityResultsPanel.getOffsetWidth()/*290*/, 0);
 		rootPanel.setWidgetPosition(mapsPanel, indent, OTHER_WIDGET_TOP);
-		
+
 		int mapsHeight = getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight();
-		
+
 		mapsPanel.setPixelSize(Ruvego.getClientWidth() - Ruvego.getIndent(), mapsHeight);
 		rootPanel.setWidgetPosition(Ruvego.footerEncapPanel, 0, (getClientHeight() - Ruvego.getFooterHeight()));
+		secondHeaderPanel.setWidgetPosition(timeOfTheactivityResultsPanel, width - /*timeOfTheactivityResultsPanel.getOffsetWidth()*/330, 0);
 	}
-	
+
 	private static void ruvegoPanelResize(int width) {
 		headerPanel.setWidth(width + "px");
 		footerEncapPanel.setPixelSize(width, FOOTER_FIXED_HEIGHT);
@@ -403,16 +430,36 @@ public class Ruvego implements EntryPoint {
 
 	}
 
+	protected void formAboutPage() {
+		if (aboutPage == null) {
+			aboutPage = RuvegoAboutPage.getPage();
+		} else {
+			aboutPage.panelsView();
+		}
+		clearOtherPages("aboutPage");
+	}
+
+	private void clearOtherPages(String currentPage) {
+		if (!currentPage.equalsIgnoreCase("homePage") && homePage != null) {
+			homePage.clearContent();	
+		}
+		
+		if (!currentPage.equalsIgnoreCase("contributePage") && contributePage != null) {
+			contributePage.clearContent();
+		}
+		
+		if (!currentPage.equalsIgnoreCase("aboutPage") && aboutPage != null) {
+			aboutPage.clearContent();
+		}
+	}
+
 	protected void formContributePage() {
 		if (contributePage == null) {
 			contributePage = RuvegoContribute.getPage();
 		} else {
-			contributePage.clearContent();
 			contributePage.panelsView();
 		}
-		if (homePage != null) {
-			homePage.clearContent();	
-		}
+		clearOtherPages("contributePage");
 	}
 
 	/** No Panels are made visible in this. This is used to just create the Home Page and align and not to show results */
@@ -423,10 +470,7 @@ public class Ruvego implements EntryPoint {
 			homePage.clearContent();
 			homePage.ruvegoHomePagePanelAlignments();
 		}
-		
-		if (contributePage != null) {
-			contributePage.clearContent();
-		}
+		clearOtherPages("homePage");
 	}
 
 	private void setFooterPanel() {
@@ -437,13 +481,13 @@ public class Ruvego implements EntryPoint {
 		rootPanel.add(footerEncapPanel);//, 0, (Window.getClientHeight() - footerEncapPanel.getOffsetHeight() - FOOTER_FIXED_HEIGHT));
 
 		Hyperlink contributePage = new Hyperlink("Contribute", "contributePage");
-		Hyperlink about = new Hyperlink("About", "aboutPage");
+		Hyperlink aboutPage = new Hyperlink("About", "aboutPage");
 
-		footerEncapPanel.add(contributePage, 15, 3);
-		footerEncapPanel.add(about, contributePage.getAbsoluteLeft() + contributePage.getOffsetWidth() + footerContentSpacing, 3);
+		footerEncapPanel.add(aboutPage, 15, 3);
+		footerEncapPanel.add(contributePage, aboutPage.getAbsoluteLeft() + aboutPage.getOffsetWidth() + footerContentSpacing, 3);
 
 		contributePage.setStyleName("footerContent");
-		about.setStyleName("footerContent");
+		aboutPage.setStyleName("footerContent");
 	}
 
 
@@ -505,6 +549,31 @@ public class Ruvego implements EntryPoint {
 				placeChoose();
 			}
 		});
+		
+		imgBox = new Image("Images/shoppingcart.png");
+		imgBox.setSize("45px", "35px");
+		imgBox.setStyleName("imgLogo");
+		headerPanel.add(imgBox, Window.getClientWidth() - 68, headerPanel.getOffsetHeight() - 55);
+
+		lblBoxText = new Label("Box");
+		lblBoxText.setStyleName("boxLogoText");
+		lblBoxText.setWidth("30px");
+		headerPanel.add(lblBoxText, Window.getClientWidth() - 57, headerPanel.getOffsetHeight() - 20);
+
+		lblBoxCount = new Label("0");
+		/* Cookie retrieval */
+		String cookieValue = Cookies.getCookie("sid");
+		if (cookieValue == null) {
+			Cookies.setCookie("sid", lblBoxCount.getText(), expires, null, "/", false);
+			lblBoxCount.setText("0");
+			boxCount = 0;
+		} else {
+			lblBoxCount.setText(Cookies.getCookie("sid"));			
+		}
+
+		lblBoxCount.setStyleName("boxText");
+		lblBoxCount.setWidth("30px");
+		headerPanel.add(lblBoxCount, Window.getClientWidth() - 57, headerPanel.getOffsetHeight() - 55);
 
 		suggestBox.addKeyDownHandler(new KeyDownHandler() {
 			private int count = 0;
@@ -521,23 +590,22 @@ public class Ruvego implements EntryPoint {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				if (History.getToken().equalsIgnoreCase("contributePage")) {
-					System.out.println("Set home page");
-					RuvegoContribute.contributePanel.setVisible(false);
-					History.newItem("homePage");
-				} else {
+				if (History.getToken().equalsIgnoreCase("homePage")) {
 					formHomePage();
+				} else {
+					clearOtherPages(History.getToken());
+					History.newItem("homePage");
 				}
 			}
 		});
-		
+
 	}
 
 	protected void placeChoose() {
 		if (suggestBox.getText().equalsIgnoreCase("")) {
 			return;
 		}
-		
+
 		WITHIN_MILES_INDEX = listBoxWithin.getSelectedIndex();
 		PLACE = suggestBox.getText();
 
@@ -554,13 +622,13 @@ public class Ruvego implements EntryPoint {
 		}
 
 		withinRange = Ruvego.listBoxWithin.getItemText(Ruvego.listBoxWithin.getSelectedIndex());
-		
+
 		System.out.println("Search request processing start");
 
-		if (History.getToken().equalsIgnoreCase("contributePage")) {
-			History.newItem("homePage");
+		if (History.getToken().equalsIgnoreCase("homePage")) {
 			homePage.showResults();
 		} else {
+			History.newItem("homePage");
 			homePage.showResults();
 		}
 	}

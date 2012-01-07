@@ -76,7 +76,7 @@ public class RuvegoHomePage {
 					categoryResults.getLblHier().setStyleName("lblHierNormal");
 					categoryResults.getLblHier().setVisible(false);
 					categoryResults.getLblHierDiv().setVisible(false);
-
+					lblHier1.setStyleName("lblHierNormal");
 					categoryResults.panelsView();
 				}
 			}

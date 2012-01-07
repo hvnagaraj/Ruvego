@@ -19,19 +19,16 @@
 
 .categoryResutsPanel {
 	background: rgba(0, 0, 0, 0.7);
-	background-color: red;
 	text-align: center;
 }
 
 .subCategoryResutsPanel {
 	background: rgba(0, 0, 0, 0.2);
-	background-color: blue;
 	text-align: center;
 }
 
 .resultsImagePanel {
-	background: rgba(0, 0, 0, 0.4); //
-	background-color: silver; //
+	background: rgba(0, 0, 0, 0.4);
 	text-align: center;
 }
 
@@ -229,7 +226,6 @@
 	font-family: "Arvo", Helvetica, sans-serif;
 	color: #cd7e2a;
 	font-size: 14px;
-	word-wrap: break-word;
 }
 
 .briefDesc {
@@ -312,4 +308,31 @@
 	font-family: "Arvo", Helvetica, sans-serif;
 	color: black;
 	font-size: 12px;
+}
+
+.about {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: orange;
+	font-size: 18px;
+}
+
+.aboutContent {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 15px;
+}
+
+.boxText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-weight: bold;
+	color: orange;
+	font-size: 19px;
+	text-align: center;
+}
+
+.boxLogoText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+	text-align: center;
 }

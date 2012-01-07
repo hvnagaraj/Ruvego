@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.cellview.client.ColumnSortEvent;
@@ -44,7 +46,8 @@ public class ResultsDataGridView {
 	
 	static private AbsolutePanel timingsPanel = new AbsolutePanel();
 	static private AbsolutePanel infoPanel = new AbsolutePanel();
-	static private Label button;
+	static private Label btnMoreDetails;
+	static private Label btnAddCart;
 
 	static private AsyncCallback<ResultsPacket[]> activityResulstCallback;
 
@@ -211,11 +214,22 @@ public class ResultsDataGridView {
 		//htmlBrief.setWidth(RESULTS_BRIEF_PANEL_WIDTH - 20 + "px");
 		htmlBrief.setText("The Golden Gate Bridge is a suspension bridge spanning the Golden Gate, the opening of the San Francisco Bay into the Pacific Ocean. As part of both U.S. Route 101 and California State Route 1, the structure links the city of San Francisco, on the northern tip of the San Francisco Peninsula, to Marin County.");
 
-		button = new Label("Btn 1");
-		button.setText("More details");
-		button.setStyleName("btnMoreDetails");
-		resultsBriefPanel.add(button, 12, resultsBriefPanel.getOffsetHeight() - Ruvego.getFooterHeight() - button.getOffsetHeight());
+		btnMoreDetails = new Label("More details");
+		btnMoreDetails.setStyleName("btnMoreDetails");
+		resultsBriefPanel.add(btnMoreDetails, RESULTS_BRIEF_PANEL_WIDTH - 200, 
+				resultsBriefPanel.getOffsetHeight() - Ruvego.getFooterHeight() - btnMoreDetails.getOffsetHeight());
 
+		btnAddCart = new Label("Add to Box");
+		btnAddCart.setStyleName("btnMoreDetails");
+		btnMoreDetails.setWidth("87px");
+		resultsBriefPanel.add(btnAddCart, 12, resultsBriefPanel.getOffsetHeight() - Ruvego.getFooterHeight() - btnAddCart.getOffsetHeight());
+		
+		btnAddCart.addClickHandler(new ClickHandler() {		
+			@Override
+			public void onClick(ClickEvent event) {
+				Ruvego.incCount();
+			}
+		});
 	}
 
 	public void fetchActivityResults(String prevType, final String request) {
@@ -297,7 +311,10 @@ public class ResultsDataGridView {
 
 		resultsBriefPanel.setWidgetPosition(htmlAddress, 54, htmlName.getOffsetHeight() + htmlName.getAbsoluteTop() - resultsBriefPanel.getAbsoluteTop() + 5);
 
-		resultsBriefPanel.setWidgetPosition(button, 10, resultsBriefPanel.getOffsetHeight() - button.getOffsetHeight() - 10);
+		resultsBriefPanel.setWidgetPosition(btnAddCart, 10, resultsBriefPanel.getOffsetHeight() - btnAddCart.getOffsetHeight() - 10);
+		
+		resultsBriefPanel.setWidgetPosition(btnMoreDetails, RESULTS_BRIEF_PANEL_WIDTH - btnMoreDetails.getOffsetWidth() - 10, 
+				resultsBriefPanel.getOffsetHeight() - btnMoreDetails.getOffsetHeight() - 10);
 		
 		resultsBriefPanel.setWidgetPosition(contact, 54, htmlAddress.getAbsoluteTop() + htmlAddress.getOffsetHeight() - resultsBriefPanel.getAbsoluteTop() + 1);
 

@@ -99,7 +99,6 @@ public abstract class CategoryView {
 					
 					RuvegoHomePage.getLblHier1().setVisible(true);
 					RuvegoHomePage.getLblHier1().setText(Ruvego.getPlace());
-					RuvegoHomePage.getLblHier1().setStyleName("lblHierNormal");
 
 					noContent.setVisible(false);
 					resultsPanel.setVisible(true);
@@ -222,6 +221,7 @@ public abstract class CategoryView {
 		System.out.println("Token 2 : " + tokens[2]);
 
 		RuvegoHomePage.getLblHier1().setStyleName("lblHierNormalActive");
+		System.out.println("Setting styling of lbl hier1");
 		lblHier.setText(tokens[1]);
 		lblHier.setVisible(true);
 		lblHierDiv.setVisible(true);

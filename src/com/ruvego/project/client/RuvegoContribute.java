@@ -2,6 +2,7 @@ package com.ruvego.project.client;
 
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FormPanel;
@@ -93,6 +94,9 @@ public class RuvegoContribute {
 		Window.addResizeHandler(new ResizeHandler() {
 
 			public void onResize(ResizeEvent event) {
+				if (History.getToken().equalsIgnoreCase("contributePage")) {
+					ruvegoContributeAlignments();
+				}
 			}
 		});
 
@@ -184,9 +188,5 @@ public class RuvegoContribute {
 	    return s.substring(0, 1).toUpperCase() +
 	               s.substring(1).toLowerCase();
 	}
-
-
-
-
 }
 
