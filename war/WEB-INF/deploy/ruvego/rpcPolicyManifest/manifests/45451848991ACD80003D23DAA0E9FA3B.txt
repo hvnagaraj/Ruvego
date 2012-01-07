@@ -1,0 +1,2 @@
+serviceClass: com.ruvego.project.client.ResultsWrite
+path: 872E090FA26FA6E84D3C338982D53E5C.gwt.rpc

@@ -1,0 +1,315 @@
+.headerPanel {
+	background-color: #313131;
+}
+
+.pageBackground {
+	background-color: grey;
+}
+
+.resultsBriefPanel {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.secondHeaderPanel {
+	background: rgba(0, 0, 0, 0.4);
+	border-bottom-style: solid;
+	border-bottom-color: silver;
+	border-bottom-width: 1px;
+}
+
+.categoryResutsPanel {
+	background: rgba(0, 0, 0, 0.7);
+	background-color: red;
+	text-align: center;
+}
+
+.subCategoryResutsPanel {
+	background: rgba(0, 0, 0, 0.2);
+	background-color: blue;
+	text-align: center;
+}
+
+.resultsImagePanel {
+	background: rgba(0, 0, 0, 0.4); //
+	background-color: silver; //
+	text-align: center;
+}
+
+.timeOfTheDay {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.tabPanel {
+	background-color: white;
+}
+
+.footerPanel {
+	background-color: #313131;
+}
+/*
+.footerContent {
+	font-family: "Arvo", Helvetica, sans-serif;	
+	font-size: 14px;
+	color: silver;
+}
+*/
+.footerContent a:link {
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	color: silver;
+}
+
+.footerContent a:hover {
+	color: silver;
+}
+
+.footerContent a:visited {
+	color: silver;
+}
+
+.footerContent a:active {
+	color: silver;
+}
+
+.suggestBox {
+	border-radius: 4px;
+	padding: 0px 40px 0px 15px;
+	border: 1px solid #CCCCCC;
+	font-size: 16px;
+}
+
+.searchBtn {
+	cursor: pointer;
+}
+
+.button {
+	border-radius: 5px;
+	color: black;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 15px;
+	cursor: pointer;
+	background-color: white;
+	text-align: center;
+}
+
+.lblHierNormal {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+}
+
+.lblHierNormalActive {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+}
+
+.lblHierNormalActive:hover {
+	color: #e28b2e;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.lblHierMouseOver {
+	color: #e28b2e;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.listBox {
+	font-size: 10px;
+}
+
+.withinLabel {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif; //
+	font-size: 11px; //
+	font-weight: bold;
+}
+
+.chooseButton {
+	font-size: 12px;
+	font-weight: bold;
+	vertical-align: middle;
+	text-align: center;
+	opacity: .7;
+}
+
+.withinPlace {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 16px; //
+	font-weight: bold;
+}
+
+.address {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px; //
+	font-weight: bold;
+}
+
+.resultsDetailTitle {
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 19px;
+	color: silver;
+}
+
+.resultsDetails {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px; //
+	font-weight: bold;
+}
+
+.chkBox {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+}
+
+.chkBoxBlack {
+	color: black;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+}
+
+.selCategoryText {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px; //
+	font-weight: bold;
+	word-wrap: break-word;
+}
+
+.imgLogo {
+	cursor: pointer;
+}
+
+.image {
+	cursor: pointer;
+}
+
+.imageCaption {
+	cursor: pointer;
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+	word-wrap: break-word;
+}
+
+.gridBackground {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.timingsPanel {
+	background-color: #cd7e2a;
+}
+
+.infoPanel {
+	border-top: 2px solid silver;
+}
+
+.timings {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 14px;
+}
+
+.info {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+}
+
+.btnMoreDetails {
+	cursor: pointer;
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: #cd7e2a;
+	font-size: 14px;
+	word-wrap: break-word;
+}
+
+.briefDesc {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+	word-wrap: break-word;
+	text-align: justify;
+}
+
+.noContent {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 14px;
+	word-wrap: break-word;
+	text-align: center;
+	vertical-align: middle;
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.contributeText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 14px;
+	word-wrap: break-word;
+}
+
+.silverText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 16px;
+	word-wrap: break-word;
+}
+
+.orangeText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: #cd7e2a;
+	font-size: 16px;
+	word-wrap: break-word;
+}
+
+.contributePanelBG {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.backPanel {
+	background: rgba(255, 255, 255, 0.7);
+}
+
+.userAuthenticateBG {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.userAuthenticationDialogBox {
+	
+}
+
+.userAuthenticationDialogBoxHTML {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 16px;
+	word-wrap: break-word;
+}
+
+.userAuthenticationDialogBox .dialogContent {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 18px;
+	word-wrap: break-word;
+}
+
+.userAuthenticationDialogBox .Caption {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: #cd7e2a;
+	font-size: 18px;
+	word-wrap: break-word;
+}
+
+.listBoxWithin {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 12px;
+}
