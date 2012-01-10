@@ -936,9 +936,6 @@ public class ContributeAddActivity {
 		textBoxName.setFocus(true);
 		listBoxCategory.setItemSelected(0, true);
 		textBoxContact.setText("");
-		textAreaAddress.setText("");
-		textAreaBrief.setText("");
-		textAreaParking.setText("");
 
 		listTimings.clear();
 		listFromTime.setItemSelected(0, true);

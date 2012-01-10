@@ -267,6 +267,14 @@
 	word-wrap: break-word;
 }
 
+.orangeBoldText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: #cd7e2a;
+	font-size: 16px;
+	font-weight: bold;
+	word-wrap: break-word;
+}
+
 .contributePanelBG {
 	background: rgba(0, 0, 0, 0.7);
 }
@@ -328,6 +336,7 @@
 	color: orange;
 	font-size: 19px;
 	text-align: center;
+	cursor: pointer;
 }
 
 .boxLogoText {
@@ -335,4 +344,59 @@
 	color: silver;
 	font-size: 14px;
 	text-align: center;
+	cursor: pointer;
+}
+
+.boxValueText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+	word-wrap: break-word;
+}
+
+.whiteText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 16px;
+	text-align: center;
+}
+
+.boxValueAddressText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 12px;
+	word-wrap: normal;
+}
+
+.boxValuePositionText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 13px;
+	word-wrap: normal;
+}
+
+.ratingValue {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: orange;
+	font-size: 15px;
+	word-wrap: normal;
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.boxResultPanelEven {
+	background: rgba(0, 0, 0, 0.3);
+}
+
+.srcDstInfoText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: orange;
+	font-size: 15px;
+	word-wrap: normal;
+}
+
+.srcDstText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 15px;
+	word-wrap: normal;
 }

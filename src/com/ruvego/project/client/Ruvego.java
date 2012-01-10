@@ -7,9 +7,12 @@ import java.util.LinkedList;
 
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
+import com.google.gwt.maps.client.control.ControlAnchor;
+import com.google.gwt.maps.client.control.ControlPosition;
 import com.google.gwt.maps.client.control.LargeMapControl3D;
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geom.LatLng;
+import com.google.gwt.maps.client.impl.ControlPositionImpl;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -90,12 +93,28 @@ public class Ruvego implements EntryPoint {
 	protected static RuvegoHomePage homePage = null;
 	static private RuvegoContribute contributePage = null;
 	static private RuvegoAboutPage aboutPage = null;
+	static private RuvegoBoxPage boxView = null;
 
 	static private ResultsFetchAsync resultsFetchService;
 
 	/* Time of the Day Panel */
 	static private CheckBox chkBoxDaytime, chkBoxNightlife;
 	
+	/* Google Maps */
+	private static ControlPosition zoomPosRight;
+	private static ControlPosition zoomPosLeft;
+	private static LargeMapControl3D zoomControls;
+
+	public static void mapControlsSetRight() {
+		map.removeControl(zoomControls);
+		map.addControl(zoomControls, zoomPosRight);		
+	}
+
+	public static void mapControlsSetLeft() {
+		map.removeControl(zoomControls);
+		map.addControl(zoomControls, zoomPosLeft);		
+	}
+
 	public static void incCount() {
 		boxCount++;
 		lblBoxCount.setText(String.valueOf(boxCount));
@@ -258,7 +277,16 @@ public class Ruvego implements EntryPoint {
 				//map.setInfoWindowEnabled(true);
 				//map.addControl(new OverviewMapControl());
 				//mapsPanel.add(map);
-				map.addControl(new LargeMapControl3D());
+				zoomPosRight = new ControlPosition(ControlAnchor.TOP_RIGHT, 10, 10);
+				zoomPosLeft = new ControlPosition(ControlAnchor.TOP_LEFT, 10, 10);
+				zoomControls = new LargeMapControl3D();
+				
+				if (History.getToken().equalsIgnoreCase("boxView")) {
+					mapControlsSetRight();
+				} else {
+					mapControlsSetLeft();					
+				}
+
 				//map.addOverlay(new Marker(city));
 				rootPanel.add(mapsPanel, indent, OTHER_WIDGET_TOP);
 				map.setSize("100%", "100%");
@@ -281,9 +309,26 @@ public class Ruvego implements EntryPoint {
 						      } 
 						    }); 
 				 */
+				
+				managePageHistory();
+
 			}
 		});
+		
+		ruvegoPanelAlignments();
+		rootPanel.setStyleName("pageBackground");
 
+
+		Window.addResizeHandler(new ResizeHandler() {
+			public void onResize(ResizeEvent event) {
+				if (History.getToken().equalsIgnoreCase("homePage")) {
+					ruvegoPanelAlignments();
+				}
+			}
+		});
+	}
+
+	private void managePageHistory() {
 		if (History.getToken().equalsIgnoreCase("contributePage")) {
 			formContributePage();
 		} else if (History.getToken().equalsIgnoreCase("homePage")) {
@@ -293,16 +338,14 @@ public class Ruvego implements EntryPoint {
 			formAboutPage();
 			History.newItem("aboutPage");
 		} else if (History.getToken().equalsIgnoreCase("boxView")) {
-			formAboutPage();
+			formBoxView();
 			History.newItem("boxView");
 		} else {
 			System.err.println("Error: Invalid token in the URL. Going to default page");
 			formHomePage();
 			History.newItem("homePage");
 		}
-
-		rootPanel.setStyleName("pageBackground");
-
+		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			public void onValueChange(ValueChangeEvent<String> event) {
 				String historyToken = event.getValue();
@@ -311,8 +354,12 @@ public class Ruvego implements EntryPoint {
 						formContributePage();
 					} else if (historyToken.contains("homePage")) {
 						formHomePage();
+						mapControlsSetLeft();
 					} else if (historyToken.contains("aboutPage")) {
 						formAboutPage();
+					} else if (historyToken.contains("boxView")) {
+						formBoxView();
+						mapControlsSetRight();
 					}
 
 				} catch (IndexOutOfBoundsException e) {
@@ -321,13 +368,6 @@ public class Ruvego implements EntryPoint {
 			}
 		});
 
-		Window.addResizeHandler(new ResizeHandler() {
-			public void onResize(ResizeEvent event) {
-				if (History.getToken().equalsIgnoreCase("homePage")) {
-					ruvegoPanelAlignments();
-				}
-			}
-		});
 	}
 
 	private void setPlaces() {
@@ -554,11 +594,27 @@ public class Ruvego implements EntryPoint {
 		imgBox.setSize("45px", "35px");
 		imgBox.setStyleName("imgLogo");
 		headerPanel.add(imgBox, Window.getClientWidth() - 68, headerPanel.getOffsetHeight() - 55);
+		
+		imgBox.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				boxViewOnClick();
+			}
+		});
 
 		lblBoxText = new Label("Box");
 		lblBoxText.setStyleName("boxLogoText");
 		lblBoxText.setWidth("30px");
 		headerPanel.add(lblBoxText, Window.getClientWidth() - 57, headerPanel.getOffsetHeight() - 20);
+		
+		lblBoxText.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				boxViewOnClick();
+			}
+		});
 
 		lblBoxCount = new Label("0");
 		/* Cookie retrieval */
@@ -574,6 +630,13 @@ public class Ruvego implements EntryPoint {
 		lblBoxCount.setStyleName("boxText");
 		lblBoxCount.setWidth("30px");
 		headerPanel.add(lblBoxCount, Window.getClientWidth() - 57, headerPanel.getOffsetHeight() - 55);
+		lblBoxCount.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				boxViewOnClick();
+			}
+		});
 
 		suggestBox.addKeyDownHandler(new KeyDownHandler() {
 			private int count = 0;
@@ -599,6 +662,25 @@ public class Ruvego implements EntryPoint {
 			}
 		});
 
+	}
+
+	protected void boxViewOnClick() {
+		if (History.getToken().equalsIgnoreCase("boxView")) {
+			formBoxView();
+		} else {
+			clearOtherPages(History.getToken());
+			History.newItem("boxView");
+		}
+	}
+
+	protected void formBoxView() {
+		if (boxView == null) {
+			boxView = RuvegoBoxPage.getPage();
+		} else {
+			boxView.panelsView();
+		}
+		clearOtherPages("boxView");
+		boxView.fetchBoxResults();
 	}
 
 	protected void placeChoose() {
