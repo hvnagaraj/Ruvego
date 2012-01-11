@@ -14,6 +14,7 @@ public class ResultsBriefPanelPacket implements Serializable {
 	private String miscInfo;
 	private String timings;
 	private String contact;
+	private String rating;
 	
 	public ResultsBriefPanelPacket() {
 		
@@ -30,6 +31,7 @@ public class ResultsBriefPanelPacket implements Serializable {
 		this.miscInfo = miscInfo;
 		this.timings = timings;
 		this.contact = contact;
+		this.rating = rating;
 	}
 	
 	public String getName() {
@@ -62,6 +64,10 @@ public class ResultsBriefPanelPacket implements Serializable {
 
 	public String getContact() {
 		return this.contact;
+	}
+
+	public String getRating() {
+		return this.rating;
 	}
 
 }

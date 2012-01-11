@@ -52,6 +52,7 @@ public class Ruvego implements EntryPoint {
 	static private String PLACE = "Wrong";
 	static private int WITHIN_MILES_INDEX = 5;
 	static private int MIN_PAGE_HEIGHT = 0;
+	static private int MAPS_POSITION = 0;
 	
 	static private int boxCount = 0;
 
@@ -115,16 +116,36 @@ public class Ruvego implements EntryPoint {
 		map.addControl(zoomControls, zoomPosLeft);		
 	}
 
-	public static void incCount() {
+	public static void insertItem(String data) {
 		boxCount++;
 		lblBoxCount.setText(String.valueOf(boxCount));
 		
-	    Cookies.setCookie("sid", lblBoxCount.getText(), expires, null, "/", false);
+	    Cookies.setCookie("itemcount", lblBoxCount.getText(), expires, null, "/", false);
+	    
+		String cookieValue = Cookies.getCookie("itemsdata");
+		if (cookieValue == null) {
+			Cookies.setCookie("itemsdata", data, expires, null, "/", false);
+			return;
+		} 
+		
+		boolean entryPresent = (cookieValue.toLowerCase().indexOf(data) >= 0);
+		if (entryPresent == true) {
+			//TODO Entry already in the box
+			System.out.println("Entry already present");
+			return;
+		}
+
+		/* <;;> between entries and <;> between fields of an entry */
+	    Cookies.setCookie("itemsdata", cookieValue + "<;;>" + data, expires, null, "/", false);
 	}
 	
-	public static void decCount() {
+	public static void deleteItem() {
 		boxCount--;
 		lblBoxCount.setText(String.valueOf(boxCount));
+	}
+	
+	public static void setMapsPosition(int value) {
+		MAPS_POSITION = value;
 	}
 
 	public static int getIndent() {
@@ -410,11 +431,12 @@ public class Ruvego implements EntryPoint {
 
 		rootPanel.setWidgetPosition(headerPanel, 0, 0);
 		rootPanel.setWidgetPosition(secondHeaderPanel, 0, headerPanel.getOffsetHeight());
-		rootPanel.setWidgetPosition(mapsPanel, indent, OTHER_WIDGET_TOP);
 
 		int mapsHeight = getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight();
 
-		mapsPanel.setPixelSize(Ruvego.getClientWidth() - Ruvego.getIndent(), mapsHeight);
+		rootPanel.setWidgetPosition(mapsPanel, indent + MAPS_POSITION, OTHER_WIDGET_TOP);
+		mapsPanel.setPixelSize(Ruvego.getClientWidth() - Ruvego.getIndent() - MAPS_POSITION, mapsHeight);
+		
 		rootPanel.setWidgetPosition(Ruvego.footerEncapPanel, 0, (getClientHeight() - Ruvego.getFooterHeight()));
 		secondHeaderPanel.setWidgetPosition(timeOfTheactivityResultsPanel, width - /*timeOfTheactivityResultsPanel.getOffsetWidth()*/330, 0);
 	}
@@ -471,12 +493,12 @@ public class Ruvego implements EntryPoint {
 	}
 
 	protected void formAboutPage() {
+		clearOtherPages("aboutPage");
 		if (aboutPage == null) {
 			aboutPage = RuvegoAboutPage.getPage();
 		} else {
 			aboutPage.panelsView();
 		}
-		clearOtherPages("aboutPage");
 	}
 
 	private void clearOtherPages(String currentPage) {
@@ -491,26 +513,30 @@ public class Ruvego implements EntryPoint {
 		if (!currentPage.equalsIgnoreCase("aboutPage") && aboutPage != null) {
 			aboutPage.clearContent();
 		}
+		
+		if (!currentPage.equalsIgnoreCase("boxView") && boxView != null) {
+			boxView.clearContent();
+		}
 	}
 
 	protected void formContributePage() {
+		clearOtherPages("contributePage");
 		if (contributePage == null) {
 			contributePage = RuvegoContribute.getPage();
 		} else {
 			contributePage.panelsView();
 		}
-		clearOtherPages("contributePage");
 	}
 
 	/** No Panels are made visible in this. This is used to just create the Home Page and align and not to show results */
 	protected void formHomePage() {
+		clearOtherPages("homePage");
 		if (homePage == null) {
 			homePage = RuvegoHomePage.getPage();
 		} else {
 			homePage.clearContent();
 			homePage.ruvegoHomePagePanelAlignments();
 		}
-		clearOtherPages("homePage");
 	}
 
 	private void setFooterPanel() {
@@ -618,13 +644,13 @@ public class Ruvego implements EntryPoint {
 
 		lblBoxCount = new Label("0");
 		/* Cookie retrieval */
-		String cookieValue = Cookies.getCookie("sid");
+		String cookieValue = Cookies.getCookie("itemcount");
 		if (cookieValue == null) {
-			Cookies.setCookie("sid", lblBoxCount.getText(), expires, null, "/", false);
+			Cookies.setCookie("itemcount", lblBoxCount.getText(), expires, null, "/", false);
 			lblBoxCount.setText("0");
 			boxCount = 0;
 		} else {
-			lblBoxCount.setText(Cookies.getCookie("sid"));			
+			lblBoxCount.setText(Cookies.getCookie("itemcount"));			
 		}
 
 		lblBoxCount.setStyleName("boxText");
@@ -674,12 +700,12 @@ public class Ruvego implements EntryPoint {
 	}
 
 	protected void formBoxView() {
+		clearOtherPages("boxView");
 		if (boxView == null) {
 			boxView = RuvegoBoxPage.getPage();
 		} else {
 			boxView.panelsView();
 		}
-		clearOtherPages("boxView");
 		boxView.fetchBoxResults();
 	}
 

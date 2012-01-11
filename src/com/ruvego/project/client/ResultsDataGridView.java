@@ -66,6 +66,7 @@ public class ResultsDataGridView {
 	static Image imageResultsBrief;
 	static HTML htmlBrief;
 	static protected HTML contact;
+	protected static String rating;
 
 	static private HTML timings;
 	public static void setTimings(String timings) {
@@ -73,6 +74,8 @@ public class ResultsDataGridView {
 	}
 
 	static private HTML info;
+
+	
 	public static void setMiscinfo(String miscinfo) {
 		ResultsDataGridView.info.setHTML(miscinfo);		
 	}
@@ -227,7 +230,7 @@ public class ResultsDataGridView {
 		btnAddCart.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
-				Ruvego.incCount();
+				Ruvego.insertItem(htmlName.getText() + "<;>" + htmlAddress.getText() + "<;>" + rating);
 			}
 		});
 	}

@@ -140,6 +140,7 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 				ResultsDataGridView.setTimings(result.getTimings());
 				ResultsDataGridView.setMiscinfo(result.getMiscinfo());
 				ResultsDataGridView.contact.setHTML(result.getContact());
+				ResultsDataGridView.rating = result.getRating();
 				
 				System.out.println("Image Path : " + result.getImagepath());
 				ResultsDataGridView.imageResultsBrief.setUrl(result.getImagepath());

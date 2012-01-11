@@ -16,9 +16,11 @@ import com.google.gwt.maps.client.geocode.DirectionsPanel;
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geocode.LatLngCallback;
 import com.google.gwt.maps.client.geocode.StatusCodes;
+import com.google.gwt.maps.client.geocode.Waypoint;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.maps.client.overlay.Marker;
+import com.google.gwt.maps.client.overlay.MarkerOptions;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -38,6 +40,8 @@ public class RuvegoBoxPage {
 	final static int SRC_DST_PANEL_HEIGHT = 50;
 	final static int BOX_RESULTS_INDENT = 5;
 	final static int BOX_RESULTS_SPACING = 5;
+	final static int BOX_PANEL_WIDTH = 300;
+	final static int BOX_VIEW_MIN_HEIGHT = 650;
 
 	private static ScrollPanel scrollPanel;
 
@@ -67,6 +71,10 @@ public class RuvegoBoxPage {
 
 	private static String query = "";
 	private static String directionsToAddress = "";
+	
+	private static Waypoint[] waypoint;
+	private static Waypoint[] waypointWithSrc;
+	private static Waypoint[] waypointWithBoth;
 
 	private class BoxResult {
 		private AbsolutePanel boxResultPanel = new AbsolutePanel();
@@ -86,8 +94,8 @@ public class RuvegoBoxPage {
 		srcDstPanel = new AbsolutePanel();
 
 		RootPanel.get().add(scrollPanel, Ruvego.getIndent(), Ruvego.getOtherWidgetTop());
-		scrollPanel.setStyleName("contributePanelBG");
-		scrollPanel.setPixelSize(300, Window.getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 5);
+		scrollPanel.setStyleName("boxBG");
+		scrollPanel.setPixelSize(BOX_PANEL_WIDTH, Window.getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 5);
 		srcDstPanel = new AbsolutePanel();
 		srcDstPanel.setPixelSize(500, 150);
 		srcDstPanel.setStyleName("contributePanelBG");
@@ -177,18 +185,17 @@ public class RuvegoBoxPage {
 
 			@Override
 			public void onSuccess(LatLng point) {
-				query = query + txtBoxSource.getText() + " ";
-				System.out.println("Callback : " + query);
-
-				query = query + directionsToAddress;
+				changePositions(65);
+				waypointWithSrc = new Waypoint[boxValueCount + 1];
+				for (int i = 0; i < boxValueCount; i++) {
+					waypointWithSrc[i + 1] = waypoint[i];
+				}
+				waypointWithSrc[0] = new Waypoint(point);
 
 				if (!txtBoxDest.getText().equalsIgnoreCase("")) {
-					query = query + "to: ";
-					System.out.println("Dst Address : " + txtBoxDest.getText());
 					geocoder.getLatLng(txtBoxDest.getText(), mapsCheckDstAddress);
 				} else {
-					System.out.println(query);
-					Directions.load(query, opts, directionsCallback);
+					Directions.loadFromWaypoints(waypointWithSrc, opts, directionsCallback);
 				}
 
 			}
@@ -203,17 +210,18 @@ public class RuvegoBoxPage {
 
 			@Override
 			public void onSuccess(LatLng point) {
-				query = query + txtBoxDest.getText();
-				System.out.println("Callback : " + query);
-				Directions.load(query, opts, directionsCallback);
+				waypointWithBoth = new Waypoint[boxValueCount + 2];
+				waypointWithBoth[boxValueCount + 1] = new Waypoint(point);
+				for (int i = 0; i < boxValueCount + 1; i++) {
+					waypointWithBoth[i] = waypointWithSrc[i];
+				}
+				Directions.loadFromWaypoints(waypointWithBoth, opts, directionsCallback);
 			}
 		};
 
 
 
 		geocoder = Ruvego.getGeocode();
-
-
 		opts = new DirectionQueryOptions(Ruvego.getMapWidget(), 
 				directionsPanel); 
 
@@ -223,8 +231,10 @@ public class RuvegoBoxPage {
 						+ StatusCodes.getName(statusCode) + " " + statusCode); 
 			} 
 			public void onSuccess(DirectionResults result) { 
-				System.out.println("Distance : " + result.getDistance());
-				GWT.log("Successfully loaded directions.", null); 
+				System.out.println("Distance : " + result.getDistance().inLocalizedUnits()); 
+				if (result.getRoutes().listIterator().hasNext()) {
+					System.out.println(result.getRoutes().listIterator().next().getDistance().inLocalizedUnits());
+				}
 			} 
 		};
 
@@ -233,19 +243,32 @@ public class RuvegoBoxPage {
 
 	protected void mapRoute() {
 		query = "";
-		//directionsToAddress = "";
 		Ruvego.getMapWidget().clearOverlays();
 
 		if (!txtBoxSource.getText().equalsIgnoreCase("")) {
-			query = query + "from: ";
 			System.out.println("Src Address : " + txtBoxSource.getText());
 			geocoder.getLatLng(txtBoxSource.getText(), mapsCheckSrcAddress);
+		} else if (!txtBoxSource.getText().equalsIgnoreCase("")) {
+			// TODO entering just the destination is not currently supported
+		} else {
+			changePositions(64);			
 		}
+		
+		System.out.println("Waypoints : " + waypoint.toString());
+		Directions.loadFromWaypoints(waypoint, opts, directionsCallback);
 
 	}
 
+	private void changePositions(int start) {
+		for (int i = 0; i < boxValueCount; i++) {
+			boxResult[i].lblPosition.setText(String.valueOf((char)(i + 1 + start)));
+		}
+	}
+
 	public void fetchBoxResults() {
-		String cookieValue = Cookies.getCookie("sid");
+		directionsToAddress = "";
+		Ruvego.setMapsPosition(BOX_PANEL_WIDTH);
+		String cookieValue = Cookies.getCookie("itemcount");
 		if (cookieValue != null) {
 			boxValueCount = Integer.parseInt(cookieValue);
 
@@ -254,13 +277,24 @@ public class RuvegoBoxPage {
 				System.out.println("Box has more than 25 items");
 				return;
 			}
+			
+			String entryDelims = "<;;>";
+			String[] entry;
+
+			entry = cookieValue.split(entryDelims);
+			
+			waypoint = new Waypoint[boxValueCount];
 
 			boxResult = new BoxResult[boxValueCount];
 
 			for (int i = 0; i < boxValueCount; i++) {
+				String fieldsDelims = "<;>";
+				String[] fields;
+
+				fields = entry[i].split(fieldsDelims);
+				
 				boxResult[i] = new BoxResult();
-				//boxResult[i].boxResultPanel = new AbsolutePanel();
-				boxResult[i].boxResultPanel.setSize("100%", "100px");
+				boxResult[i].boxResultPanel.setSize("100%", 100 + "px");
 				grid.setWidget(i, 0, boxResult[i].boxResultPanel);
 
 				if (i % 2 == 1) {
@@ -271,26 +305,17 @@ public class RuvegoBoxPage {
 				img.setPixelSize(35, 25);
 				boxResult[i].boxResultPanel.add(img, BOX_RESULTS_INDENT, 5);
 
-				boxResult[i].lblPosition.setText(String.valueOf(i + 1));
+				boxResult[i].lblPosition.setText(String.valueOf((char)(i + 1 + 64)));
 				boxResult[i].lblPosition.setStyleName("whiteText");
 				boxResult[i].lblPosition.setWidth("34px");
 				boxResult[i].boxResultPanel.add(boxResult[i].lblPosition, BOX_RESULTS_INDENT, 8);
 
-				boxResult[i].name = new HTML("Golden Gate Bridge " + (i + 1));
+				boxResult[i].name = new HTML(fields[0]);
 				boxResult[i].name.setStyleName("silverText");
 				boxResult[i].boxResultPanel.add(boxResult[i].name, BOX_RESULTS_INDENT + img.getOffsetWidth() + 5, 8);
 
-				boxResult[i].address = new Label("1063 Morse Avenue Apt 20-300 Sunnyvale CA USA", false);
-				
-				if (i == 0)
-				boxResult[0].address = new Label("1063 Morse Avenue Apt 20-300 Sunnyvale CA USA", false);
-				if (i == 1)
-				boxResult[1].address = new Label("425 E Tasman Drive San Jose CA", false);
-				if (i == 2)
-				boxResult[2].address = new Label("San Francisco CA", false);
-
-				//geocoder.getLatLng(boxResult[i].address.getText(), mapsCallback);
-				directionsToAddress = directionsToAddress + "to: " + boxResult[i].address.getText() + " ";
+				boxResult[i].address = new Label(fields[1], false);
+				waypoint[i] = new Waypoint(boxResult[i].address.getText());
 				boxResult[i].address.setStyleName("boxValueAddressText");
 				boxResult[i].address.setWidth((boxResult[i].boxResultPanel.getOffsetWidth() - BOX_RESULTS_INDENT * 2) + "px");
 				boxResult[i].boxResultPanel.add(boxResult[i].address, BOX_RESULTS_INDENT, BOX_RESULTS_SPACING + img.getOffsetHeight());
@@ -300,7 +325,7 @@ public class RuvegoBoxPage {
 				boxResult[i].boxResultPanel.add(rectangle, BOX_RESULTS_INDENT, 
 						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 10);
 
-				boxResult[i].rating = new Label("3.3/5.0", true);
+				boxResult[i].rating = new Label(fields[2] + "/5.0", true);
 				boxResult[i].rating.setStyleName("orangeBoldText");
 				boxResult[i].rating.setWidth("125px");
 				boxResult[i].boxResultPanel.add(boxResult[i].rating, BOX_RESULTS_INDENT + 12, 
@@ -337,14 +362,17 @@ public class RuvegoBoxPage {
 			}
 		}
 
-
 		geocoder.getLatLng(boxResult[0].address.getText(), mapsCallback);
 		geocoder.getLatLng(boxResult[1].address.getText(), mapsCallback);
 		geocoder.getLatLng(boxResult[2].address.getText(), mapsCallback);
 
+		panelAlignments();
+	}
+
+	private void panelAlignments() {
+		Ruvego.setMapsPosition(BOX_PANEL_WIDTH);
+		Ruvego.setMinimumPageHeight(BOX_VIEW_MIN_HEIGHT);
 		Ruvego.ruvegoPanelAlignments();
-		Ruvego.getMapsPanel().setWidth((Window.getClientWidth() - scrollPanel.getOffsetWidth() - Ruvego.getIndent()) + "px");
-		RootPanel.get().setWidgetPosition(Ruvego.getMapsPanel(), Ruvego.getIndent() + scrollPanel.getOffsetWidth(), Ruvego.getOtherWidgetTop());
 	}
 
 	protected void reorganizePositions(int currentPos) {
@@ -358,32 +386,37 @@ public class RuvegoBoxPage {
 			return;
 		}
 
-		//lblPosition[currentPos].setText("33"/*txtBoxPosition.getText()*/);
-
-		if (currentPos > newPos) {
-			int temp = currentPos;
-			currentPos = newPos;
-			newPos = temp;
-		}
-
 		System.out.println("Current Position : " + currentPos + " New Position : " + newPos);
 
 		String tempName = boxResult[currentPos].name.getText();
 		String tempAddress = boxResult[currentPos].address.getText();
 		String tempRating = boxResult[currentPos].rating.getText();
+		Waypoint tempWaypoint = waypoint[currentPos];
 
-
-		for (int i = currentPos; i < newPos; i++) {
-			boxResult[i].name.setText(boxResult[i + 1].name.getText());
-			boxResult[i].address.setText(boxResult[i + 1].address.getText());
-			boxResult[i].rating.setText(boxResult[i + 1].rating.getText());
-			System.out.println("Moving from  " + (i + 1) + " to " + i);
+		if (currentPos < newPos) {
+			for (int i = currentPos; i < newPos; i++) {
+				boxResult[i].name.setText(boxResult[i + 1].name.getText());
+				boxResult[i].address.setText(boxResult[i + 1].address.getText());
+				boxResult[i].rating.setText(boxResult[i + 1].rating.getText());
+				System.out.println("Moving from  " + (i + 1) + " to " + i);
+				waypoint[i] = waypoint[i + 1];
+			}
+		} else {
+			for (int i = currentPos; i > newPos; i--) {
+				boxResult[i].name.setText(boxResult[i - 1].name.getText());
+				boxResult[i].address.setText(boxResult[i - 1].address.getText());
+				boxResult[i].rating.setText(boxResult[i - 1].rating.getText());
+				System.out.println("Moving from  " + (i - 1) + " to " + i);
+				waypoint[i] = waypoint[i - 1];
+			}
 		}
-
+		
 		boxResult[newPos].name.setText(tempName);
 		boxResult[newPos].address.setText(tempAddress);
 		boxResult[newPos].rating.setText(tempRating);
+		waypoint[newPos] = tempWaypoint;
 		boxResult[currentPos].txtBoxPosition.setText((currentPos + 1) + "");
+
 	}
 
 
@@ -395,8 +428,15 @@ public class RuvegoBoxPage {
 	}
 
 	public void panelsView() {
-		// TODO Auto-generated method stub
+		scrollPanel.setVisible(true);
+		srcDstPanel.setVisible(true);
+		fetchBoxResults();
+	}
 
+	public void clearContent() {
+		scrollPanel.setVisible(false);
+		srcDstPanel.setVisible(false);
+		Ruvego.setMapsPosition(0);
 	}
 
 }
