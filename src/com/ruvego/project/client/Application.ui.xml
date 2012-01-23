@@ -1,0 +1,12 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:a='urn:import:com.ruvego.project.client'>
+
+	<g:VerticalPanel>
+		<g:HTML ui:field="fbLoginButton"></g:HTML>
+		<g:Button ui:field="fbMe">Get myself</g:Button>
+		<g:Button ui:field="fbFriends">Get friends</g:Button>
+		<g:Button ui:field="fbLogout">Logout from Facebook</g:Button>
+		<g:HTML ui:field="fbProfile"></g:HTML>
+	</g:VerticalPanel>
+</ui:UiBinder> 
