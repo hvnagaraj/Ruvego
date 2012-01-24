@@ -32,14 +32,21 @@ public class RuvegoAboutPage {
 		Window.addResizeHandler(new ResizeHandler() {
 			public void onResize(ResizeEvent event) {
 				if (History.getToken().equalsIgnoreCase("aboutPage")) {
-					ruvegoAboutAlignments();
+					panelResizeAlignments();
 				}
 			}
 		});
 
-		ruvegoAboutAlignments();
+		panelAlignments();
 	}
 	
+	protected static void panelResizeAlignments() {
+		aboutPanel.setPixelSize(1000 - Ruvego.getIndent(), 400);
+		Ruvego.setMinimumPageHeight(aboutPanel.getOffsetHeight() + Ruvego.getFooterHeight() + Ruvego.getOtherWidgetTop());
+		Ruvego.rootPanel.setWidgetPosition(aboutPanel, Ruvego.getIndent() + (Ruvego.getMapsPanel().getOffsetWidth() - aboutPanel.getOffsetWidth())/2, 
+				Ruvego.getOtherWidgetTop());
+	}
+
 	public static RuvegoAboutPage getPage() {
 		if (page == null) {
 			page = new RuvegoAboutPage();
@@ -47,12 +54,11 @@ public class RuvegoAboutPage {
 		return page;
 	}
 	
-	static protected void ruvegoAboutAlignments() {
-		aboutPanel.setPixelSize(1000 - Ruvego.getIndent(), 400);
-		Ruvego.setMinimumPageHeight(aboutPanel.getOffsetHeight() + Ruvego.getFooterHeight() + Ruvego.getOtherWidgetTop());
-		Ruvego.ruvegoPanelAlignments();
-		Ruvego.rootPanel.setWidgetPosition(aboutPanel, Ruvego.getIndent() + (Ruvego.getMapsPanel().getOffsetWidth() - aboutPanel.getOffsetWidth())/2, 
-				Ruvego.getOtherWidgetTop());
+	static protected void panelAlignments() {
+		Ruvego.setMapsPosition(0, 0);
+		Ruvego.setMinimumPageHeight(RuvegoHomePage.HOMEPAGE_PAGE_HEIGHT);
+		Ruvego.panelAlignments();
+		panelResizeAlignments();
 	}
 	
 	public void clearContent() {
@@ -61,7 +67,7 @@ public class RuvegoAboutPage {
 	
 	public void panelsView() {
 		aboutPanel.setVisible(true);
-		ruvegoAboutAlignments();
+		panelAlignments();
 	}
 
 }

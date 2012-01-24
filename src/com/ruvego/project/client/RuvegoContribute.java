@@ -70,7 +70,7 @@ public class RuvegoContribute {
 		listBox.addItem("Activity");
 		listBox.addItem("Category");
 		listBox.addItem("Place");
-		listBox.setStyleName("silverText");
+		listBox.setStyleName("blackText");
 		contributePanel.add(listBox, 40, 14);
 		listBox.setVisibleItemCount(1);
 
@@ -95,7 +95,7 @@ public class RuvegoContribute {
 
 			public void onResize(ResizeEvent event) {
 				if (History.getToken().equalsIgnoreCase("contributePage")) {
-					ruvegoContributeAlignments();
+					panelResizeAlignments();
 				}
 			}
 		});
@@ -113,7 +113,17 @@ public class RuvegoContribute {
 		};
 
 		setupAddActivity();
-		ruvegoContributeAlignments();
+		panelAlignments();
+	}
+
+	protected static void panelResizeAlignments() {
+		int width = Ruvego.getClientWidth();
+		
+		contributePanel.setPixelSize(1000 - Ruvego.getIndent(), ContributeAddActivity.getPanel().getAbsoluteTop()
+				+ ContributeAddActivity.getPanel().getOffsetHeight()
+				- contributePanel.getAbsoluteTop());
+		Ruvego.rootPanel.setWidgetPosition(contributePanel, Ruvego.getIndent() + (width - Ruvego.getIndent() - contributePanel.getOffsetWidth())/2, 
+				Ruvego.getOtherWidgetTop());
 	}
 
 	protected void setupAddPlace() {
@@ -137,14 +147,10 @@ public class RuvegoContribute {
 		ContributeAddCategory.clearContent();
 	}
 
-	static protected void ruvegoContributeAlignments() {
-		contributePanel.setPixelSize(1000 - Ruvego.getIndent(), ContributeAddActivity.getPanel().getAbsoluteTop()
-				+ ContributeAddActivity.getPanel().getOffsetHeight()
-				- contributePanel.getAbsoluteTop());
+	static protected void panelAlignments() {
+		panelResizeAlignments();
 		Ruvego.setMinimumPageHeight(contributePanel.getOffsetHeight() + Ruvego.getFooterHeight() + Ruvego.getOtherWidgetTop());
-		Ruvego.ruvegoPanelAlignments();
-		Ruvego.rootPanel.setWidgetPosition(contributePanel, Ruvego.getIndent() + (Ruvego.getMapsPanel().getOffsetWidth() - contributePanel.getOffsetWidth())/2, 
-				Ruvego.getOtherWidgetTop());
+		Ruvego.panelAlignments();
 	}
 
 	/* Singleton implementation */
@@ -159,7 +165,7 @@ public class RuvegoContribute {
 		contributePanel.setVisible(true);
 		listBox.setSelectedIndex(0);
 		setupAddActivity();
-		ruvegoContributeAlignments();
+		panelAlignments();
 	}
 	
 	public void clearContent() {

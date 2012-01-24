@@ -35,33 +35,17 @@ public class ResultsCategoryView extends CategoryView {
 		return page;
 	}
 	
-	protected void noContentAlignments() {
-        AbsolutePanel mapsPanel = Ruvego.getMapsPanel();
-
-        mapsPanel.setWidgetPosition(noContent, (mapsPanel.getOffsetWidth() - noContent.getOffsetWidth())/2, 
-        		(mapsPanel.getOffsetHeight() - noContent.getOffsetHeight())/2);
-	}
-	
-	protected void setupNoContent() {
-		AbsolutePanel mapsPanel = Ruvego.getMapsPanel();
-		/* If no content for a given place, given within Miles Range and given Time of the Day then display this message */
-		mapsPanel.add(noContent, (mapsPanel.getOffsetWidth() - 300)/2, mapsPanel.getOffsetHeight()/2);
-		noContent.setStyleName("noContent");
-		noContent.setVisible(false);
-	}
 	
 	protected void categoryResultsOnFailure() {
-		noContent.setVisible(true);
-		noContent.setHTML("The systems are being upgraded for high performance. The systems will be back in a while. Sorry for the inconvenience");
-		categoryViewAlignments();
+		Ruvego.noContent.setVisible(true);
+		Ruvego.noContent.setHTML("The systems are being upgraded for high performance. The systems will be back in a while. Sorry for the inconvenience");
+		panelAlignments();
 	}
 	
 	protected void noActivitiesErrorDisplay() {
-		noContent.setHTML("No Activities Found. Change your search criteria and try again");
-		noContent.setWidth("250px");
-		noContent.setVisible(true);
+		Ruvego.errorDisplay("No Activities Found. Change your search criteria and try again");
 		resultsPanel.setVisible(false);
-		noContentAlignments();
+		Ruvego.errorDisplayAlignments();
 	}
 	
 	protected void setupSubCategoryView(String subCategory) {
@@ -74,7 +58,7 @@ public class ResultsCategoryView extends CategoryView {
 	}
 
 	public void clearContent() {
-		noContent.setVisible(false);
+		Ruvego.noContent.setVisible(false);
 		lblHier.setVisible(false);
 		lblHierDiv.setVisible(false);
 		resultsPanel.setVisible(false);

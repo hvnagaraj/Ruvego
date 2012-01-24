@@ -15,7 +15,7 @@ public class RuvegoHomePage {
 	
 	static private RuvegoHomePage page;
 	
-	static final private int HOMEPAGE_MIN_HEIGHT = 650;
+	static final protected int HOMEPAGE_PAGE_HEIGHT = 650;
 
 	/* Numeric constants */
 	int MAPS_MIN_HEIGHT = 275;
@@ -50,18 +50,19 @@ public class RuvegoHomePage {
 		lblHier1.setText(Ruvego.getPlace());
 		lblHierPanel.add(lblHier1);
 		lblHier1.setStyleName("lblHierNormal");
-		lblHierPanel.setVisible(true);
+		lblHierPanel.setVisible(false);
 		lblHier1.setVisible(false);
 		lblHierPanel.setSpacing(7);
+		lblHierPanel.setStyleName("lblHierPanel");
 
-		Ruvego.getSecondHeaderPanel().add(lblHierPanel, 0, 0);
+		Ruvego.getMapsPanel().add(lblHierPanel, Ruvego.getIndent(), 0);
 
 		/* All the Event Handlers */
 		/* Resize window handler for making the site compatible for different resolutions utilizing the maximum possible resources */
 		Window.addResizeHandler(new ResizeHandler() {
 
 			public void onResize(ResizeEvent event) {
-				ruvegoHomePagePanelAlignments();
+				panelResizeAlignments();
 			}
 		});
 
@@ -98,7 +99,13 @@ public class RuvegoHomePage {
 		}; 
 		
 		/* All the alignments of the main page */
-		ruvegoHomePagePanelAlignments();
+		panelAlignments();
+	}
+
+	protected void panelResizeAlignments() {
+		/* This is empty as of today. Because the one panel which is added part of the home page is the
+		 * lblhier panel which is on the left side and dont need any resize alignments
+		 */
 	}
 
 	public void showResults() {		
@@ -108,15 +115,16 @@ public class RuvegoHomePage {
 		categoryResults.fetchCategoryResults();
 	}
 
-	public void ruvegoHomePagePanelAlignments() {
-		/** Setting minimum page height for the HomePage. Appropriate pages must set this value */ 
-		Ruvego.setMinimumPageHeight(HOMEPAGE_MIN_HEIGHT);
-		Ruvego.secondHeaderPanel.setWidgetPosition(lblHierPanel, 0, 0);
-		Ruvego.ruvegoPanelAlignments();
+	public void panelAlignments() {
+		Ruvego.setMinimumPageHeight(HOMEPAGE_PAGE_HEIGHT);
+		Ruvego.setMapsPosition(0, 0);
+		panelResizeAlignments();
+		Ruvego.panelAlignments();
 	}
 
 	
 	public void clearContent() {
+		lblHierPanel.setVisible(false);
 		lblHier1.setVisible(false);
 		if (categoryResults != null) {
 			categoryResults.clearContent();
@@ -124,10 +132,10 @@ public class RuvegoHomePage {
 	}
 
 	public int getClientHeight() {
-		if (Window.getClientHeight() > HOMEPAGE_MIN_HEIGHT) {
+		if (Window.getClientHeight() > HOMEPAGE_PAGE_HEIGHT) {
 			return(Window.getClientHeight());
 		} else {
-			return(HOMEPAGE_MIN_HEIGHT);
+			return(HOMEPAGE_PAGE_HEIGHT);
 		}
 	}
 }

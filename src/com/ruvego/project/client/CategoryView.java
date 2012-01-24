@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -12,14 +13,15 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public abstract class CategoryView {
 	final static private int ACTIVITY_PANEL_FIXED_HEIGHT = 205;
-	
+
 	private String type;
-	
+
 	protected ScrollPanel resultsPanel;
 
 	private Grid gridPanel;
@@ -34,8 +36,6 @@ public abstract class CategoryView {
 
 	protected AsyncCallback<CategoryPacket> callbackCategoryResults;
 
-	static protected HTML noContent = new HTML();
-	
 	public Label getLblHier() {
 		return lblHier;
 	}
@@ -51,12 +51,12 @@ public abstract class CategoryView {
 	public CategoryView() { 
 		System.out.println("Created object of type ResultsCategoryView");
 
-		setupNoContent();
-
 		Window.addResizeHandler(new ResizeHandler() {
 
 			public void onResize(ResizeEvent event) {
-				categoryViewAlignments();
+				if (History.getToken().equalsIgnoreCase("homePage")) {
+					panelResizeAlignments();
+				}
 			}
 		});
 
@@ -64,11 +64,22 @@ public abstract class CategoryView {
 		resultsPanel = new ScrollPanel();
 		Ruvego.getRootPanel().add(resultsPanel);
 		resultsPanel.setStyleName("categoryResutsPanel");
-		
+
 		setLblHier();
 	}
 
-	protected abstract void setupNoContent(); 
+	protected void panelResizeAlignments() {
+		int width = Ruvego.getClientWidth();
+		int height = Ruvego.getClientHeight();
+
+		Ruvego.errorDisplayAlignments();
+
+		Ruvego.getRootPanel().setWidgetPosition(resultsPanel, Ruvego.getIndent(),
+				height - Ruvego.getFooterHeight() - ACTIVITY_PANEL_FIXED_HEIGHT);
+		Ruvego.getMapsPanel().setWidgetPosition(RuvegoHomePage.getLblHierPanel(), 0, resultsPanel.getAbsoluteTop() - Ruvego.getMapsPanel().getAbsoluteTop() -
+					RuvegoHomePage.getLblHierPanel().getOffsetHeight());
+		resultsPanel.setPixelSize(width - Ruvego.getIndent(), ACTIVITY_PANEL_FIXED_HEIGHT);
+	}
 
 	private void setLblHier() {
 		lblHierDiv = new Label(" / ");
@@ -96,11 +107,12 @@ public abstract class CategoryView {
 						noActivitiesErrorDisplay();
 						return;
 					} 
-					
+
 					RuvegoHomePage.getLblHier1().setVisible(true);
+					RuvegoHomePage.getLblHierPanel().setVisible(true);
 					RuvegoHomePage.getLblHier1().setText(Ruvego.getPlace());
 
-					noContent.setVisible(false);
+					Ruvego.noContent.setVisible(false);
 					resultsPanel.setVisible(true);
 
 					int numOfRowElements = 0;
@@ -144,7 +156,7 @@ public abstract class CategoryView {
 							imageCaption[i + numOfRowElements * j].setStyleName("imageCaption");
 							imageCaption[i + numOfRowElements * j].setPixelSize(130, 12);
 							imageCaption[i + numOfRowElements * j].setLayoutData(result.getNext(i) + " ; " + result.getImageCaption(i) + " ; " + type);
-							
+
 							imageCaption[i + numOfRowElements * j].addClickHandler(new ClickHandler() {
 
 								@Override
@@ -167,7 +179,7 @@ public abstract class CategoryView {
 					}
 					gridPanel.setCellPadding(11);
 					resultsPanel.add(gridPanel);
-					categoryViewAlignments();
+					panelAlignments();
 				}
 			};
 		}
@@ -184,29 +196,23 @@ public abstract class CategoryView {
 	protected abstract void categoryResultsOnFailure();
 
 	protected abstract void fetchResults();
-	
+
 	protected abstract void panelsView();
-	
+
 	protected abstract void lblHierStyling();
-	
+
 	protected abstract void lblClickHandler();
-	
+
 	protected void setType(String type) {
 		this.type = type;
 	}
 
-	protected void categoryViewAlignments() {
-		int width = Ruvego.getClientWidth();
-		int height = Ruvego.getClientHeight();
-
-		noContentAlignments();
-
-		Ruvego.getRootPanel().setWidgetPosition(resultsPanel, Ruvego.getIndent(),
-				height - Ruvego.getFooterHeight() - ACTIVITY_PANEL_FIXED_HEIGHT);
-		resultsPanel.setPixelSize(width - Ruvego.getIndent(), ACTIVITY_PANEL_FIXED_HEIGHT);
+	protected void panelAlignments() {
+		Ruvego.setMapsPosition(0, 0);
+		Ruvego.setMinimumPageHeight(RuvegoHomePage.HOMEPAGE_PAGE_HEIGHT);
+		panelResizeAlignments();
+		Ruvego.panelAlignments();
 	}
-
-	protected abstract void noContentAlignments();
 
 	private void categoryOnClick(String inputLine) {
 		resultsPanel.setVisible(false);

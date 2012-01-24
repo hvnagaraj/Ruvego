@@ -28,6 +28,7 @@ import com.ruvego.project.client.ResultsWrite;
 import com.ruvego.project.client.WriteActivityPacket;
 import com.ruvego.project.client.WriteCategoryPacket;
 import com.ruvego.project.client.WritePlacePacket;
+import com.ruvego.project.shared.CreateItineraryPacket;
 
 @SuppressWarnings("serial")
 public class ResultsBackendWrite extends RemoteServiceServlet implements ResultsWrite {
@@ -40,30 +41,21 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 
 	LatLng place1 = null, place2;
 
-	Mongo database;
-	DB db;
-	DBCollection coll;
-	BasicDBObject query;
-	DBCursor data;
-	BasicDBObject dataObject;
-	Object value;
-
-
+	private Mongo database;
+	private DB db;
+	
 	public boolean writeResults(WritePlacePacket writeData) {
-
-		connectDB("Place");
-
 		/* Header query */
-		query = new BasicDBObject();
+		BasicDBObject query = new BasicDBObject();
 		query.put("place", writeData.getPlaceName());
 
 
-		if (entryPresentDB(query) == false) {
+		if (connectDBAndCheckForEntry("Place", query) == false) {
 			return false;
 		}
 
-		dataObject = new BasicDBObject();
-		value = new Object();
+		BasicDBObject dataObject = new BasicDBObject();
+		Object value = new Object();
 
 		value = writeData.getPlaceName() + ", " + writeData.getState();
 
@@ -72,15 +64,77 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		dataObject.append("lon", writeData.getLon());
 		dataObject.append("lat", writeData.getLat());
 
-		coll.save(dataObject);
+		if (connectDBAndSave("Place", dataObject) == false) {
+			return false;
+		}
 
 		System.out.println("Successfully inserted Place entry into DB");
 
 		return true;		
 	}
 
-	private boolean entryPresentDB(DBObject query) {
-		data = coll.find(query);
+	private boolean connectDBAndUpdate(String collectionName, BasicDBObject getObject, BasicDBObject updateObject) {
+		DBCollection coll = null;
+
+		try {
+			if (database == null) {
+				database = new Mongo("localhost");
+				db = database.getDB(DATABASE);
+			}
+
+			/* Collection will be named after Place, Category, Activity or Sub-Activity */
+			coll = db.getCollection(collectionName);
+		} catch (MongoException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		coll.update(getObject, updateObject);
+		
+		return true;
+	}
+
+	private boolean connectDBAndSave(String collectionName, BasicDBObject dataObject) {
+		DBCollection coll = null;
+
+		try {
+			if (database == null) {
+				database = new Mongo("localhost");
+				db = database.getDB(DATABASE);
+			}
+
+			/* Collection will be named after Place, Category, Activity or Sub-Activity */
+			coll = db.getCollection(collectionName);
+		} catch (MongoException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		coll.save(dataObject);
+		
+		return true;
+	}
+
+	private boolean connectDBAndCheckForEntry(String collectionName, DBObject query) {
+		DBCollection coll = null;
+
+		try {
+			if (database == null) {
+				database = new Mongo("localhost");
+				db = database.getDB(DATABASE);
+			}
+
+			/* Collection will be named after Place, Category, Activity or Sub-Activity */
+			coll = db.getCollection(collectionName);
+		} catch (MongoException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		DBCursor data = coll.find(query);
 		while(data.hasNext()) {
 			if (data.next() != null) {
 				System.err.println("Entry already present. Cannot overwrite");
@@ -89,47 +143,28 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		}
 
 		return true;
-
-	}
-
-	private void connectDB(String type) {
-		try {
-			if (database == null) {
-				database = new Mongo("localhost");
-				db = database.getDB(DATABASE);
-			}
-
-			/* Collection will be named after Place, Category, Activity or Sub-Activity */
-			coll = db.getCollection(type);
-		} catch (MongoException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	@Override
 	public boolean writeResults(WriteCategoryPacket writeData) {
 		LinkedList<String> typeOptions = null;
 
-		if (writeData.getCategory() != null) {
-			connectDB("SubCategory");
-		} else {
-			connectDB("Category");	
-		}
-
-
 		/* Header query */
-		query = new BasicDBObject();
+		BasicDBObject query = new BasicDBObject();
 		query.put("name", writeData.getName());
 
-		if (entryPresentDB(query) == false) {
-			return false;
+		if (writeData.getCategory() != null) {
+			if (connectDBAndCheckForEntry("SubCategory", query) == false) {
+				return false;
+			}
+		} else {
+			if (connectDBAndCheckForEntry("Category", query) == false) {
+				return false;
+			}			
 		}
 
-		dataObject = new BasicDBObject();
-		value = new Object();
+		BasicDBObject dataObject = new BasicDBObject();
+		Object value = new Object();
 
 		dataObject.append("name", writeData.getName());
 		dataObject.append("imagepath", "icons/" + writeData.getImagePath());
@@ -173,7 +208,11 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 			dataObject.append("typeOptions", listArray);
 		}
 
-		coll.save(dataObject);
+		if (writeData.getCategory() != null) {
+			connectDBAndSave("SubCategory", dataObject);
+		} else {
+			connectDBAndSave("Category", dataObject);
+		}
 
 		System.out.println("Server : Successfully inserted Category entry into DB");
 
@@ -181,18 +220,16 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 	}
 
 	public boolean writeResults(WriteActivityPacket writeData) {
-		connectDB(writeData.getType());
-
 		/* Header query */
-		query = new BasicDBObject();
+		BasicDBObject query = new BasicDBObject();
 		query.put("name", writeData.getName());
 
-		if (entryPresentDB(query) == false) {
+		if (connectDBAndCheckForEntry(writeData.getType(), query) == false) {
 			return false;
 		}
 
-		dataObject = new BasicDBObject();
-		value = new Object();
+		BasicDBObject dataObject = new BasicDBObject();
+		Object value = new Object();
 
 		dataObject.append("name", writeData.getName());
 		dataObject.append("brief", writeData.getBrief());
@@ -241,8 +278,6 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		/* Get all the places within the 150 miles range */
 		String[] placeList;
 		placeList = getPlaceWithinBounds(writeData);
-
-		connectDB(writeData.getType());
 
 		/* Maps */
 		Integer[] dist = new Integer[placeList.length];
@@ -373,8 +408,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		}
 
 		/* Completed writing to the Activity Collection. Commit to DB */
-		connectDB("Activity");
-		coll.save(dataObject);
+		connectDBAndSave("Activity", dataObject);
 
 		/* Update Place, Category and Sub Category */
 		/* Header query to read the Time of the day contents first and then edit-write to DB */
@@ -388,9 +422,8 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		BasicDBObject update = new BasicDBObject().append(place, ((dist / 25) + 1) * 25);
 
 		/* Update Category and SubCategory */
-		connectDB(categoryType);		
-		coll.update(new BasicDBObject().append("name", category), new BasicDBObject().append("$addToSet", update));
-		coll.update(new BasicDBObject().append("name", category), new BasicDBObject().append("$set", 
+		connectDBAndUpdate(categoryType, new BasicDBObject().append("name", category), new BasicDBObject().append("$addToSet", update));
+		connectDBAndUpdate(categoryType, new BasicDBObject().append("name", category), new BasicDBObject().append("$set", 
 				new BasicDBObject().append("timeoftheday", timeOfTheDayValue)));
 		System.out.println("Updated : " + categoryType + " Place : " + place + " Dist : " + dist);
 	}
@@ -398,11 +431,26 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 	private int getTimeOfTheDay(WriteActivityPacket writeData) {
 		int value = 0;
 
-		connectDB("Category");
-		BasicDBObject updateQuery = new BasicDBObject();
-		updateQuery.put("name", writeData.getCategory());
+		DBCollection coll = null;
 
-		DBCursor content = coll.find(updateQuery);
+		try {
+			if (database == null) {
+				database = new Mongo("localhost");
+				db = database.getDB(DATABASE);
+			}
+
+			/* Collection will be named after Place, Category, Activity or Sub-Activity */
+			coll = db.getCollection("Category");
+		} catch (MongoException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		BasicDBObject query = new BasicDBObject();
+		query.put("name", writeData.getCategory());
+
+		DBCursor content = coll.find(query);
 
 		while(content.hasNext()) {
 			DBObject data = content.next();
@@ -415,7 +463,22 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 	}
 
 	private String[] getPlaceWithinBounds(WriteActivityPacket writeData) {
-		connectDB("Place");
+		DBCollection coll = null;
+
+		try {
+			if (database == null) {
+				database = new Mongo("localhost");
+				db = database.getDB(DATABASE);
+			}
+
+			/* Collection will be named after Place, Category, Activity or Sub-Activity */
+			coll = db.getCollection("Place");
+		} catch (MongoException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		/* Query */
 		BasicDBObject queryPlace = new BasicDBObject();
 		queryPlace.put("lon", new BasicDBObject().append("$lte", writeData.getLonE()));
@@ -439,7 +502,27 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 			elemNum++;
 		}
 		return placeList;
+	}
 
+	@Override
+	public boolean writeCreateItinerary(CreateItineraryPacket createItineraryPacket) {
+		BasicDBObject query = new BasicDBObject();
+		query.put("itineraryname", createItineraryPacket.getItineraryName());
+		
+		if (connectDBAndCheckForEntry(createItineraryPacket.getUsername(), query) == false) {
+			return false;
+		}
+		
+		BasicDBObject dataObject = new BasicDBObject();
+
+		dataObject.append("itineraryname", createItineraryPacket.getItineraryName());
+		dataObject.append("numdays", createItineraryPacket.getNumDays());
+		dataObject.append("startdate", createItineraryPacket.getStartDate());
+		dataObject.append("enddate", createItineraryPacket.getEndDate());
+		
+		connectDBAndSave(createItineraryPacket.getUsername(), dataObject);
+
+		return true;
 	}
 
 }

@@ -1,2 +1,0 @@
-serviceClass: com.ruvego.project.client.ResultsFetch
-path: 9698A60AB96E157DCF1ED535367537D4.gwt.rpc

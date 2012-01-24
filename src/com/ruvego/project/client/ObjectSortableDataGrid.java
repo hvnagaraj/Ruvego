@@ -134,6 +134,7 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 			}
 
 			public void onSuccess(final ResultsBriefPanelPacket result) {
+				ResultsActivityMenu.menuHide();
 				ResultsDataGridView.setHtmlName(result.getName(), result.getWebsite());
 				ResultsDataGridView.htmlAddress.setHTML(result.getaddress());
 				ResultsDataGridView.htmlBrief.setText(result.getBrief());
@@ -167,12 +168,11 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 					
 				});
 				
-				ResultsDataGridView.activityResultsAlignments();
 				dataGrid.setSize("100%", "195px");
 				
 				ResultsDataGridView.resultsBriefPanel.setVisible(true);
 				
-				ResultsDataGridView.activityResultsAlignments();
+				ResultsDataGridView.panelAlignments();
 			}
 
 		};

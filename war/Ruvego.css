@@ -3,7 +3,7 @@
 }
 
 .pageBackground {
-	background-color: grey;
+	background-color: white;
 }
 
 .resultsBriefPanel {
@@ -11,7 +11,7 @@
 }
 
 .secondHeaderPanel {
-	background: rgba(0, 0, 0, 0.4);
+	background: rgba(0, 0, 0, 0.7);
 	border-bottom-style: solid;
 	border-bottom-color: silver;
 	border-bottom-width: 1px;
@@ -43,13 +43,7 @@
 .footerPanel {
 	background-color: #313131;
 }
-/*
-.footerContent {
-	font-family: "Arvo", Helvetica, sans-serif;	
-	font-size: 14px;
-	color: silver;
-}
-*/
+
 .footerContent a:link {
 	font-family: "Arvo", Helvetica, sans-serif;
 	font-size: 14px;
@@ -90,25 +84,18 @@
 }
 
 .lblHierNormal {
-	color: silver;
+	color: black;
 	font-family: "Arvo", Helvetica, sans-serif;
 	font-size: 14px;
 }
 
 .lblHierNormalActive {
-	color: silver;
+	color: black;
 	font-family: "Arvo", Helvetica, sans-serif;
 	font-size: 14px;
 }
 
 .lblHierNormalActive:hover {
-	color: #e28b2e;
-	font-family: "Arvo", Helvetica, sans-serif;
-	font-size: 14px;
-	cursor: pointer;
-}
-
-.lblHierMouseOver {
 	color: #e28b2e;
 	font-family: "Arvo", Helvetica, sans-serif;
 	font-size: 14px;
@@ -131,7 +118,6 @@
 	font-weight: bold;
 	vertical-align: middle;
 	text-align: center;
-	opacity: .7;
 }
 
 .withinPlace {
@@ -202,7 +188,7 @@
 }
 
 .timingsPanel {
-	background-color: #cd7e2a;
+	background-color: orange;
 }
 
 .infoPanel {
@@ -224,7 +210,7 @@
 .btnMoreDetails {
 	cursor: pointer;
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: #cd7e2a;
+	color: orange;
 	font-size: 14px;
 }
 
@@ -244,6 +230,9 @@
 	text-align: center;
 	vertical-align: middle;
 	background: rgba(0, 0, 0, 0.7);
+	border-radius: 4px;
+	border: 1px solid orange;
+	padding: 5px 5px 5px 5px;
 }
 
 .contributeText {
@@ -260,16 +249,30 @@
 	word-wrap: break-word;
 }
 
+.blackText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 16px;
+	word-wrap: break-word;
+}
+
+.greyText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: #313131;
+	font-size: 16px;
+	word-wrap: break-word;
+}
+
 .orangeText {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: #cd7e2a;
+	color: orange;
 	font-size: 16px;
 	word-wrap: break-word;
 }
 
 .orangeBoldText {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: #cd7e2a;
+	color: orange;
 	font-size: 16px;
 	font-weight: bold;
 	word-wrap: break-word;
@@ -279,8 +282,13 @@
 	background: rgba(0, 0, 0, 0.7);
 }
 
+.srcDstPanelBG {
+	background: rgba(0, 0, 0, 0.5);
+	border-bottom: 1px solid silver;
+}
+
 .boxBG {
-		background: rgba(0, 0, 0, 0.5);
+	border: 1px solid #CCCCCC;
 }
 
 .backPanel {
@@ -311,7 +319,7 @@
 
 .userAuthenticationDialogBox .Caption {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: #cd7e2a;
+	color: orange;
 	font-size: 18px;
 	word-wrap: break-word;
 }
@@ -367,14 +375,14 @@
 
 .boxValueAddressText {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: silver;
+	color: #313131;
 	font-size: 12px;
 	word-wrap: normal;
 }
 
 .boxValuePositionText {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: silver;
+	color: #313131;
 	font-size: 13px;
 	word-wrap: normal;
 }
@@ -388,12 +396,12 @@
 }
 
 .boxResultPanelEven {
-	background: rgba(0, 0, 0, 0.3);
+	background-color: #ededed;
 }
 
 .srcDstInfoText {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: orange;
+	color: #313131;
 	font-size: 15px;
 	word-wrap: normal;
 }
@@ -403,4 +411,174 @@
 	color: silver;
 	font-size: 15px;
 	word-wrap: normal;
+}
+
+.boxError {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 15px;
+	word-wrap: normal;
+	border-radius: 4px;
+	border: 1px solid #CCCCCC;
+	padding: 2px 2px 2px 2px;
+	background-color: white;
+}
+
+.routeBriefPanel {
+	background: rgba(255, 255, 255, 0.8);
+	border-radius: 4px;
+	border: 1px solid #CCCCCC;
+}
+
+.routeBriefText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 14px;
+	word-wrap: normal;
+}
+
+.routeInfoText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 14px;
+	word-wrap: normal;
+}
+
+.menuNormal {
+	cursor: pointer;
+	opacity: 0.8;
+}
+
+.menuNormal:hover {
+	cursor: pointer;
+	opacity: 1;
+}
+
+.menuPanel {
+	background-color: #f0f0f0;
+	border-radius: 4px 4px 4px 0px;
+}
+
+.menuItemText {
+	cursor: pointer;
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 14px;
+	word-wrap: normal;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	text-indent: 6px;
+}
+
+.menuItemText:hover {
+	background-color: grey;
+	color: white;
+	cursor: pointer;
+}
+
+.loginText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+}
+
+.loginTextBlack {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 14px;
+}
+
+.loginPanel {
+	cursor: pointer;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+.loginPanel:hover {
+	background-color: #545454;
+}
+
+.loginPanelWhite {
+	background-color: white;
+	cursor: pointer;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+.loginDetailsPanel {
+	background-color: white;
+	border-left: 1px solid #CCCCCC;
+	border-right: 1px solid #CCCCCC;
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.boxMenuPanel {
+	background-color: orange;
+}
+
+.buttonMenu {
+	border-radius: 4px;
+	color: black;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 15px;
+	cursor: pointer;
+	background-color: white;
+	text-align: center;
+}
+
+.itineraryBG {
+	background: rgba(0, 0, 0, 0.7);
+	text-indent: 20px;
+}
+
+.silverContributeText {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: silver;
+	font-size: 14px;
+}
+
+.itineraryLoginError {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: orange;
+	font-size: 14px;
+	text-indent: 10px;
+}
+
+.lblHierPanel {
+	background: rgba(255, 255, 255, 0.9);
+}
+
+.itineraryNormal {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+}
+
+.itineraryActive {
+	color: silver;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	cursor: pointer;
+	text-indent: 5px;
+}
+
+.itineraryActive:hover {
+	color: orange;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.popUpPanel {
+	background: rgba(255, 255, 255, 0.4);
+}
+
+.boxBtnAdd {
+	background-color: #313131;
+	color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 13px;
+	cursor: pointer;
+	text-align: center;
+	border: 0px;
 }

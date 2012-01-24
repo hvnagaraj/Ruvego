@@ -9,20 +9,6 @@ public class ResultsSubCategoryView extends CategoryView {
 	public ResultsSubCategoryView() {
 	}
 	
-	protected void noContentAlignments() {
-        AbsolutePanel mapsPanel = Ruvego.getMapsPanel();
-
-        noContent.setSize("300px", "35px");
-        mapsPanel.setWidgetPosition(noContent, (mapsPanel.getOffsetWidth() - noContent.getOffsetWidth())/2, (mapsPanel.getOffsetHeight() - noContent.getOffsetHeight())/2);
-	}
-	
-	protected void setupNoContent() {
-		AbsolutePanel mapsPanel = Ruvego.getMapsPanel();
-		/* If no content for a given place, given within Miles Range and given Time of the Day then display this message */
-		mapsPanel.add(noContent, (mapsPanel.getOffsetWidth() - 300)/2, mapsPanel.getOffsetHeight()/2);
-		noContent.setVisible(false);
-	}
-	
 	protected void categoryResultsOnFailure() {
 	}
 	
