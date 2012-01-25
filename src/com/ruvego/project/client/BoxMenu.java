@@ -75,7 +75,7 @@ public class BoxMenu {
 				menuHide();
 				
 				createItinerary = CreateItinerary.getPage();
-				createItinerary.panelsView();
+				createItinerary.panelsMultiDayView();
 			}
 		});
 		

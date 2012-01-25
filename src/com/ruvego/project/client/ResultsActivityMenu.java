@@ -11,8 +11,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class ResultsActivityMenu {
 	static private ResultsActivityMenu page;
 
-	static private Timer timer;
-
 	static private VerticalPanel menuPanel;
 
 	static private Image imgMenu;
@@ -33,21 +31,12 @@ public class ResultsActivityMenu {
 		lblAddToBox.setStyleName("menuItemText");
 		lblAddToBox.setWidth("100%");
 
-		timer = new Timer() {
-			public void run() {
-				Ruvego.boxErrorClear();
-			}
-		};
-
 		lblAddToBox.addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {
 				Ruvego.insertItem(ResultsDataGridView.htmlName.getText() + "<;>" + ResultsDataGridView.htmlAddress.getText() + "<;>" + ResultsDataGridView.rating);
 				menuHide();
-
-				// Execute the timer to expire 2 seconds in the future
-				timer.schedule(3000);
 			}
 		});
 

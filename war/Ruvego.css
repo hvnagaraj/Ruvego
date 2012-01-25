@@ -283,8 +283,8 @@
 }
 
 .srcDstPanelBG {
-	background: rgba(0, 0, 0, 0.5);
-	border-bottom: 1px solid silver;
+	border-radius: 4px;
+	border: 1px solid silver;
 }
 
 .boxBG {
@@ -413,7 +413,7 @@
 	word-wrap: normal;
 }
 
-.boxError {
+.boxInfo {
 	font-family: "Arvo", Helvetica, sans-serif;
 	color: black;
 	font-size: 15px;
@@ -439,7 +439,7 @@
 
 .routeInfoText {
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: white;
+	color: black;
 	font-size: 14px;
 	word-wrap: normal;
 }
@@ -469,6 +469,17 @@
 	padding-bottom: 4px;
 	text-indent: 6px;
 }
+
+.menuItemTextNormal {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 14px;
+	word-wrap: normal;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	text-indent: 2px;
+}
+
 
 .menuItemText:hover {
 	background-color: grey;
@@ -581,4 +592,63 @@
 	cursor: pointer;
 	text-align: center;
 	border: 0px;
+}
+
+.btnRoute {
+	background-color: #313131;
+	color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 16px;
+	cursor: pointer;
+	text-align: center;
+	border: 0px;
+	padding: 6px 10px 6px 10px;
+	border-radius: 4px;
+}
+
+.boxItineraryInfo {
+	color: #313131;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 13px;
+}
+
+.boxBtnMore {
+	background-color: #313131;
+	color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 13px;
+	cursor: pointer;
+	text-align: center;
+	padding: 2px 4px 2px 4px;
+	border: 0px;
+}
+
+.boxBtnMove {
+	background-color: #313131;
+	color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 13px;
+	cursor: pointer;
+	text-align: center;
+	padding: 6px 4px 6px 4px;
+	border: 0px;
+}
+
+.boxBtnMoreClick {
+	background-color: white;
+	color: #313131;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 13px;
+	cursor: pointer;
+	text-align: center;
+	padding: 2px 4px 2px 4px;
+	border-left: 1px solid #313131;
+	border-right: 1px solid #313131;
+	border-bottom: 1px solid #313131;
+}
+
+.itineraryEntryPopUpPanel {
+	border: 0px;
+	background-color: white;
+	border: 1px solid #313131;
 }

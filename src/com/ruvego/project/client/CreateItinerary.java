@@ -1,25 +1,13 @@
 package com.ruvego.project.client;
 
-
-import java.util.Date;
-
-import org.apache.commons.lang.text.StrTokenizer;
-
-
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.logical.shared.HighlightEvent;
-import com.google.gwt.event.logical.shared.HighlightHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -28,19 +16,14 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.datepicker.client.CalendarModel;
-import com.google.gwt.user.datepicker.client.CalendarUtil;
-import com.google.gwt.user.datepicker.client.CalendarView;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.user.datepicker.client.DateBox.Format;
-import com.google.gwt.user.datepicker.client.DatePicker;
-import com.ibm.icu.util.Calendar;
 import com.ruvego.project.shared.CreateItineraryPacket;
 
 public class CreateItinerary {
 	private static CreateItinerary page;
 
 	private static String ITINERARY_NAME = "";
+	private static String NUM_DAYS = "";
 
 	private static PopupPanel popUpPanel;
 	private static VerticalPanel createItineraryPanel;
@@ -55,6 +38,10 @@ public class CreateItinerary {
 	private static ListBox listNumDays;
 	private static DateBox dateBoxStartDate;
 	private static DateBox dateBoxEndDate;
+	
+	private static VerticalPanel vEndDatePanel;
+	private static Label lblStartDate;
+	private static VerticalPanel vNumDaysPanel;
 
 	public static CreateItinerary getPage() {
 		if (page == null) {
@@ -87,7 +74,7 @@ public class CreateItinerary {
 		createItineraryPanel.add(vNamePanel);
 
 
-		VerticalPanel vNumDaysPanel = new VerticalPanel();
+		vNumDaysPanel = new VerticalPanel();
 		Label lblNumDays = new Label("No. of days");
 		vNumDaysPanel.add(lblNumDays);
 		lblNumDays.setStyleName("silverContributeText");
@@ -101,7 +88,7 @@ public class CreateItinerary {
 		createItineraryPanel.add(vNumDaysPanel);
 
 		VerticalPanel vStartDatePanel = new VerticalPanel();
-		Label lblStartDate = new Label("Start Date");
+		lblStartDate = new Label("Start Date");
 		vStartDatePanel.add(lblStartDate);
 		lblStartDate.setStyleName("silverContributeText");
 
@@ -111,7 +98,7 @@ public class CreateItinerary {
 		vStartDatePanel.add(dateBoxStartDate);
 		createItineraryPanel.add(vStartDatePanel);
 
-		VerticalPanel vEndDatePanel = new VerticalPanel();
+		vEndDatePanel = new VerticalPanel();
 		Label lblEndDate = new Label("End Date");
 		vEndDatePanel.add(lblEndDate);
 		lblEndDate.setStyleName("silverContributeText");
@@ -171,7 +158,7 @@ public class CreateItinerary {
 						return;
 					}
 
-					createItineraryPacket = new CreateItineraryPacket(txtBoxName.getText(), listNumDays.getItemText(listNumDays.getSelectedIndex()), 
+					createItineraryPacket = new CreateItineraryPacket(txtBoxName.getText(), NUM_DAYS, 
 							dateBoxStartDate.getTextBox().getText(), dateBoxEndDate.getTextBox().getText(), LoginModule.getUsername());  
 
 					ITINERARY_NAME = txtBoxName.getText();
@@ -188,13 +175,16 @@ public class CreateItinerary {
 			@Override
 			public void onClose(CloseEvent<PopupPanel> event) {
 				clearContent();
-
 			}
 		});
-
-	}
-
-	public void panelAlignments() {
+		
+		listNumDays.addChangeHandler(new ChangeHandler() {
+			
+			@Override
+			public void onChange(ChangeEvent event) {
+				NUM_DAYS = listNumDays.getItemText(listNumDays.getSelectedIndex());
+			}
+		});
 	}
 
 	public void infoCreateItinerary(String text) {
@@ -205,7 +195,21 @@ public class CreateItinerary {
 		popUpPanel.setVisible(true);
 		popUpPanel.show();
 		popUpPanel.center();
-		panelAlignments();
+	}
+	
+	public void panelsMultiDayView() {
+		panelsView();
+		vNumDaysPanel.setVisible(true);
+		vEndDatePanel.setVisible(true);
+		lblStartDate.setText("Start Date");
+	}
+	
+	public void panelsOneDayView() {
+		panelsView();
+		vNumDaysPanel.setVisible(false);
+		vEndDatePanel.setVisible(false);
+		lblStartDate.setText("Date");
+		NUM_DAYS = "1";
 	}
 
 	public void clearContent() {

@@ -146,6 +146,8 @@ public class Ruvego implements EntryPoint {
 	
 	static private Label lblItineraryNameText;
 	
+	static private Timer timer;
+	
 	public static void setItineraryText(String text) {
 		lblItineraryNameText.setText(text);
 	}
@@ -223,12 +225,13 @@ public class Ruvego implements EntryPoint {
 		System.out.println("Cookie entry added");
 	}
 
-	private static void boxInfo(String string) {
+	private static void boxInfo(String string) {		
 		lblBoxInfo.setText(string);
 		lblBoxInfo.setVisible(true);
+		timer.schedule(2500);
 	}
 
-	public static void boxErrorClear() {
+	public static void boxInfoClear() {
 		lblBoxInfo.setVisible(false);
 	}
 
@@ -438,7 +441,12 @@ public class Ruvego implements EntryPoint {
 				panelAlignments();
 			}
 		});
-
+		
+		timer = new Timer() {
+			public void run() {
+				boxInfoClear();
+			}
+		};
 	}
 
 	private void setupFacebookModule() {
@@ -773,6 +781,7 @@ public class Ruvego implements EntryPoint {
 			lblBoxCount.setText("0");
 			boxCount = 0;
 		} else {
+			boxCount = Integer.parseInt(Cookies.getCookie("itemcount"));
 			lblBoxCount.setText(Cookies.getCookie("itemcount"));			
 		}
 
@@ -815,7 +824,7 @@ public class Ruvego implements EntryPoint {
 
 		lblBoxInfo = new Label("Error");
 		lblBoxInfo.setWidth(BOX_INFO_WIDTH + "px");
-		lblBoxInfo.setStyleName("boxError");
+		lblBoxInfo.setStyleName("boxInfo");
 		lblBoxInfo.setVisible(false);
 		headerPanel.add(lblBoxInfo, Window.getClientWidth() - 185, 15);
 		
@@ -823,6 +832,11 @@ public class Ruvego implements EntryPoint {
 	}
 
 	protected void boxViewOnClick() {
+		if (boxCount == 0) {
+			boxInfo("Box is Empty");
+			return;
+		}
+		
 		if (History.getToken().equalsIgnoreCase("boxView")) {
 			formBoxView();
 		} else {

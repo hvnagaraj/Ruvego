@@ -16,5 +16,4 @@ public interface ResultsWriteAsync {
 
 	void writeCreateItinerary(CreateItineraryPacket createItineraryPacket,
 			AsyncCallback<Boolean> callbackCreateItinerary);
-
 }

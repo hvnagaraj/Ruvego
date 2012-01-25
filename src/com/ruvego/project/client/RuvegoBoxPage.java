@@ -55,7 +55,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class RuvegoBoxPage {
 	static private RuvegoBoxPage page;
 
-	final static int SRC_DST_PANEL_HEIGHT = 50;
+	final static int SRC_DST_PANEL_HEIGHT = 30;
 	final static int BOX_RESULTS_INDENT = 5;
 	final static int BOX_RESULTS_SPACING = 5;
 	final static int BOX_PANEL_WIDTH = 310;
@@ -66,8 +66,6 @@ public class RuvegoBoxPage {
 	private static ScrollPanel scrollPanel;
 
 	private static Grid grid;
-
-	private static AbsolutePanel srcDstPanel;
 
 	private static LatLngCallback mapsCallback;
 	private static LatLngCallback mapsAddSrcCallback;
@@ -90,21 +88,21 @@ public class RuvegoBoxPage {
 	private static Waypoint[] waypointWithBoth;
 
 	private static AbsolutePanel routeBriefPanel;
+	
+	private static CreateItinerary createItinerary;
 
 	private class BoxResult {
 		private AbsolutePanel boxResultPanel = new AbsolutePanel();
-		private Image imgArrow = new Image();
 		private Label lblPosition = new Label();
-		private TextBox txtBoxPosition = new TextBox();
 		private HTML name;
 		private Label address;
-		private Label rating;
 		private HTML routeInfo;
 		private Image img;
 		private Image imgClose;
+		private ItineraryEntryMenu itineraryEntryMenu;
 	}
 
-	private BoxResult[] boxResult;
+	static protected BoxResult[] boxResult;
 
 	private static HTML lblTotalDistance;
 	private static HTML lblTotalDuration;
@@ -112,11 +110,13 @@ public class RuvegoBoxPage {
 	private static BoxResultSrcDst srcBox;
 	private static BoxResultSrcDst dstBox;
 
-	private static Button btnRoute;
+	private static Label btnRoute;
+	
+	private static HTML htmlBoxItineraryInfo1;
+	private static HTML htmlBoxItineraryInfo2;
+	private static HTML htmlBoxClickHere;
 
 	private static LatLngBounds bounds = LatLngBounds.newInstance();
-
-	private static Timer timer;
 
 	private void setTotalDistDuration(String dist, String duration) {
 		lblTotalDistance.setHTML("Total Distance : " + dist);
@@ -224,30 +224,19 @@ public class RuvegoBoxPage {
 	private RuvegoBoxPage() {
 		System.out.println("Creating an object of type RuvegoBoxPage");
 		scrollPanel = new ScrollPanel();
-		srcDstPanel = new AbsolutePanel();
-
 
 		RootPanel.get().add(scrollPanel, Ruvego.getIndent(), Ruvego.getOtherWidgetTop());
 		scrollPanel.setStyleName("boxBG");
 		scrollPanel.setPixelSize(BOX_PANEL_WIDTH, Window.getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 3);
-
-		srcDstPanel = new AbsolutePanel();
-		srcDstPanel.setPixelSize(500, 150);
-		srcDstPanel.setStyleName("srcDstPanelBG");
-
-		RootPanel.get().add(srcDstPanel, Ruvego.getIndent(), 
-				Window.getClientHeight() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 1);
-		srcDstPanel.setStyleName("contributePanelBG");
-		srcDstPanel.setPixelSize(Window.getClientWidth() - Ruvego.getIndent()/*1000 - srcDstPanel.getAbsoluteLeft()*/, SRC_DST_PANEL_HEIGHT);
 
 		grid = new Grid(1, 1);
 		scrollPanel.add(grid);
 		grid.setWidth("100%");
 
 
-		btnRoute = new Button("Route");
-		btnRoute.setStyleName("button");
-		srcDstPanel.add(btnRoute, srcDstPanel.getOffsetWidth() - 90, 12);
+		btnRoute = new Label("Route");
+		btnRoute.setStyleName("btnRoute");
+		Ruvego.getMapsPanel().add(btnRoute, Ruvego.getMapsPanel().getOffsetWidth() - 90, 12);
 
 		btnRoute.addClickHandler(new ClickHandler() {
 
@@ -256,6 +245,32 @@ public class RuvegoBoxPage {
 				mapRoute();
 			}
 		});
+		
+		htmlBoxItineraryInfo1 = new HTML("*To plan your multi-day activities, create an itinerary using the menu.");
+		htmlBoxClickHere = new HTML("<a href=\"javascript:undefined;\">Click Here</a>");
+		htmlBoxItineraryInfo2 = new HTML("to save this as a 1-day itinerary");
+		
+		htmlBoxItineraryInfo1.setStyleName("boxItineraryInfo");
+		htmlBoxClickHere.setStyleName("boxItineraryInfo");
+		htmlBoxItineraryInfo2.setStyleName("boxItineraryInfo");
+		
+		
+		RootPanel.get().add(htmlBoxItineraryInfo1, Ruvego.getIndent(), Window.getClientHeight() - Ruvego.getFooterHeight() - 20);
+		RootPanel.get().add(htmlBoxClickHere, htmlBoxItineraryInfo1.getAbsoluteLeft() + htmlBoxItineraryInfo1.getOffsetWidth() + 5, 
+				Window.getClientHeight() - Ruvego.getFooterHeight() - 20);
+		RootPanel.get().add(htmlBoxItineraryInfo2, htmlBoxClickHere.getAbsoluteLeft() + htmlBoxClickHere.getOffsetWidth() + 5, 
+				Window.getClientHeight() - Ruvego.getFooterHeight() - 20);
+		
+		htmlBoxClickHere.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				createItinerary = CreateItinerary.getPage();
+				createItinerary.panelsOneDayView();
+			}
+		});
+		
+		
 
 		mapsAddSrcCallback = new LatLngCallback() {
 
@@ -372,13 +387,6 @@ public class RuvegoBoxPage {
 				}
 			}
 		});
-
-
-		timer = new Timer() {
-			public void run() {
-				Ruvego.errorDisplayClear();
-			}
-		};
 
 
 		setupRouteBriefPanel();
@@ -524,51 +532,14 @@ public class RuvegoBoxPage {
 				boxResult[i].address.setWidth((boxResult[i].boxResultPanel.getOffsetWidth() - BOX_RESULTS_INDENT * 2) + "px");
 				boxResult[i].boxResultPanel.add(boxResult[i].address, BOX_RESULTS_INDENT, BOX_RESULTS_SPACING + boxResult[i].img.getOffsetHeight());
 
-				Image rectangle = new Image("Images/blackrectangle.png");
-				rectangle.setPixelSize(80, 35);
-				boxResult[i].boxResultPanel.add(rectangle, BOX_RESULTS_INDENT, 
-						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 10);
-
-				boxResult[i].rating = new Label(fields[2] + "/5.0", true);
-				boxResult[i].rating.setStyleName("orangeBoldText");
-				boxResult[i].rating.setWidth("125px");
-				boxResult[i].boxResultPanel.add(boxResult[i].rating, BOX_RESULTS_INDENT + 12, 
-						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 18);
-
-				Label travelTime = new Label("I want to do this activity at position", true);
-				travelTime.setStyleName("boxValuePositionText");
-				travelTime.setWidth("125px");
-				boxResult[i].boxResultPanel.add(travelTime, BOX_RESULTS_INDENT + rectangle.getOffsetWidth() + 20, 
-						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 10);
-
-
-				boxResult[i].txtBoxPosition.setText(String.valueOf(i + 1));
-				boxResult[i].txtBoxPosition.setPixelSize(18, 15);
-				boxResult[i].boxResultPanel.add(boxResult[i].txtBoxPosition, travelTime.getAbsoluteLeft() - boxResult[i].boxResultPanel.getAbsoluteLeft()
-						+ travelTime.getOffsetWidth(), 
-						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 12);
-
-				boxResult[i].imgArrow = new Image("Images/arrow.png");
-				boxResult[i].imgArrow.setPixelSize(24, 24);
-				boxResult[i].imgArrow.setStyleName("imgLogo");
-				boxResult[i].imgArrow.setLayoutData(i);
-				boxResult[i].boxResultPanel.add(boxResult[i].imgArrow, boxResult[i].txtBoxPosition.getAbsoluteLeft() - boxResult[i].boxResultPanel.getAbsoluteLeft()
-						+ boxResult[i].txtBoxPosition.getOffsetWidth() + 2, 
-						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 12);
-
-				boxResult[i].imgArrow.addClickHandler(new ClickHandler() {
-
-					@Override
-					public void onClick(ClickEvent event) {
-						Image tempImg = (Image) event.getSource();
-						reorganizePositions((Integer)tempImg.getLayoutData());
-					}
-				});
+				boxResult[i].itineraryEntryMenu = new ItineraryEntryMenu(boxResult[i].boxResultPanel, 
+						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 2,
+							i);
 
 				boxResult[i].routeInfo = new HTML("");
 				boxResult[i].routeInfo.setStyleName("routeInfoText");
-				boxResult[i].boxResultPanel.add(boxResult[i].routeInfo, 20, boxResult[i].txtBoxPosition.getAbsoluteTop() - 
-						boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].txtBoxPosition.getOffsetHeight() + 8);
+				boxResult[i].boxResultPanel.add(boxResult[i].routeInfo, 20, boxResult[i].itineraryEntryMenu.btnMore.getAbsoluteTop() - 
+						boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].itineraryEntryMenu.btnMore.getOffsetHeight() + 8);
 				boxResult[i].boxResultPanel.setHeight((boxResult[i].routeInfo.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop()
 						+ boxResult[i].routeInfo.getOffsetHeight() + 2) + "px");
 
@@ -701,7 +672,7 @@ public class RuvegoBoxPage {
 			dstBox.boxResultPanel.setStyleName("boxResultPanelEven");
 		}
 		
-		srcDstSame = new CheckBox("same as source");
+		srcDstSame = new CheckBox("same as start point");
 		srcDstSame.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 
 			@Override
@@ -835,33 +806,24 @@ public class RuvegoBoxPage {
 
 	private void panelResizeAlignments() {
 		scrollPanel.setHeight((Ruvego.getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 3) + "px");
-		srcDstPanel.setWidth((Ruvego.getClientWidth() - Ruvego.getIndent()) + "px");
-		srcDstPanel.setWidgetPosition(btnRoute, srcDstPanel.getOffsetWidth() - 90, 12);
-		RootPanel.get().setWidgetPosition(srcDstPanel, Ruvego.getIndent(), Ruvego.getClientHeight() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 1);
+		Ruvego.getMapsPanel().setWidgetPosition(btnRoute, Ruvego.getMapsPanel().getOffsetWidth() - 80, Ruvego.getMapsPanel().getOffsetHeight() - 60);
 	}
 
-	protected void reorganizePositions(int currentPos) {
-		int newPos = Integer.parseInt(boxResult[currentPos].txtBoxPosition.getText()) - 1;
-
+	protected static void reorganizePositions(int currentPos, int newPos) {
 		System.out.println("Current Position : " + currentPos + " New Position : " + newPos);
 
 		if (newPos < 0) {
 			Ruvego.errorDisplay("New position cannot be -ve");
-			boxResult[currentPos].txtBoxPosition.setText((currentPos + 1) + "");
-			timer.schedule(2500);
 			return;
 		}
 
 		if (newPos >= boxValueCount) {
 			Ruvego.errorDisplay("There are only " + boxValueCount + " entries in the Box");
-			boxResult[currentPos].txtBoxPosition.setText((currentPos + 1) + "");
-			timer.schedule(2500);
 			return;
 		}
 
 		if (currentPos == newPos) {
 			Ruvego.errorDisplay("New position same as previous position");
-			timer.schedule(2500);
 			return;			
 		}
 
@@ -869,7 +831,6 @@ public class RuvegoBoxPage {
 
 		String tempName = boxResult[currentPos].name.getText();
 		String tempAddress = boxResult[currentPos].address.getText();
-		String tempRating = boxResult[currentPos].rating.getText();
 		Waypoint tempWaypoint = waypoint[currentPos];
 
 		if (currentPos < newPos) {
@@ -878,29 +839,24 @@ public class RuvegoBoxPage {
 			for (int i = currentPos; i > newPos; i--) {
 				boxResult[i].name.setText(boxResult[i - 1].name.getText());
 				boxResult[i].address.setText(boxResult[i - 1].address.getText());
-				boxResult[i].rating.setText(boxResult[i - 1].rating.getText());
-				System.out.println("Moving from  " + (i - 1) + " to " + i);
 				waypoint[i] = waypoint[i - 1];
+				System.out.println("Moving from  " + (i - 1) + " to " + i);
 			}
 		}
 
 		boxResult[newPos].name.setText(tempName);
 		boxResult[newPos].address.setText(tempAddress);
-		boxResult[newPos].rating.setText(tempRating);
 		waypoint[newPos] = tempWaypoint;
-		boxResult[currentPos].txtBoxPosition.setText((currentPos + 1) + "");
-
 	}
 
 
-	private void moveEntriesUp(int start, int end) {
+	private static void moveEntriesUp(int start, int end) {
 		String entryDelims = "<;;>";
 		String[] entry;
 
 		for (int i = start; i < end; i++) {
 			boxResult[i].name.setText(boxResult[i + 1].name.getText());
 			boxResult[i].address.setText(boxResult[i + 1].address.getText());
-			boxResult[i].rating.setText(boxResult[i + 1].rating.getText());
 			System.out.println("Moving from  " + (i + 1) + " to " + i);
 			waypoint[i] = waypoint[i + 1];
 
@@ -922,14 +878,20 @@ public class RuvegoBoxPage {
 
 	public void panelsView() {
 		scrollPanel.setVisible(true);
-		srcDstPanel.setVisible(true);
+		btnRoute.setVisible(true);
+		htmlBoxClickHere.setVisible(true);
+		htmlBoxItineraryInfo1.setVisible(true);
+		htmlBoxItineraryInfo2.setVisible(true);
 		fetchBoxResults();
 	}
 
 	public void clearContent() {
 		scrollPanel.setVisible(false);
-		srcDstPanel.setVisible(false);
 		routeBriefPanel.setVisible(false);
+		btnRoute.setVisible(false);
+		htmlBoxClickHere.setVisible(false);
+		htmlBoxItineraryInfo1.setVisible(false);
+		htmlBoxItineraryInfo2.setVisible(false);
 		Ruvego.errorDisplayClear();
 		Ruvego.setMapsPosition(0, 0);
 	}
