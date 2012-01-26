@@ -301,7 +301,7 @@ public class ContributeAddCategory {
 							tokens[0]);					
 				}
 
-				RuvegoContribute.getResultsWriteService().writeResults(writeData, callbackCategorySubmit);
+				Ruvego.getResultsWriteService().writeResults(writeData, callbackCategorySubmit);
 			}
 		});
 		textBox3.setVisible(false);

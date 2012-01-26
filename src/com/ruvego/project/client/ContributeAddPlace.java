@@ -95,7 +95,7 @@ public class ContributeAddPlace {
 						WritePlacePacket writeData = new WritePlacePacket(textBox.getText(), listBox.getItemText(listBox.getSelectedIndex()), 
 								point.getLatitudeRadians(), point.getLongitudeRadians());
 						
-						RuvegoContribute.resultsWriteService.writeResults(writeData, callbackWritePlace);
+						Ruvego.resultsWriteService.writeResults(writeData, callbackWritePlace);
 
 					}
 

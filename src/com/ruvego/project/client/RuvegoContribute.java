@@ -40,7 +40,7 @@ public class RuvegoContribute {
 
 	static private ListBox listBox;
 
-	static protected ResultsWriteAsync resultsWriteService;
+
 
 	public static AbsolutePanel getContributePanel() {
 		return RuvegoContribute.contributePanel;
@@ -48,10 +48,6 @@ public class RuvegoContribute {
 
 	public static ListBox getTypeListbox() {
 		return RuvegoContribute.listBox;
-	}
-
-	public static ResultsWriteAsync getResultsWriteService() {
-		return RuvegoContribute.resultsWriteService;
 	}
 
 	public static AsyncCallback<Boolean> getWriteCallback() {
@@ -62,9 +58,6 @@ public class RuvegoContribute {
 	private RuvegoContribute() {
 		contributePanel = new AbsolutePanel();
 		Ruvego.getRootPanel().add(contributePanel, (Window.getClientWidth() - 1000)/2, Ruvego.getOtherWidgetTop());
-
-		/* Initialize the result write service */
-		resultsWriteService = GWT.create(ResultsWrite.class);
 
 		listBox = new ListBox();
 		listBox.addItem("Activity");

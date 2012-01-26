@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.apple.dnssd.TXTRecord;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -24,32 +22,31 @@ import com.google.gwt.maps.client.geocode.LatLngCallback;
 import com.google.gwt.maps.client.geocode.LocationCallback;
 import com.google.gwt.maps.client.geocode.Placemark;
 import com.google.gwt.maps.client.geocode.Route;
-import com.google.gwt.maps.client.geocode.StatusCodes;
 import com.google.gwt.maps.client.geocode.Waypoint;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.maps.client.overlay.Marker;
-import com.google.gwt.maps.client.overlay.MarkerOptions;
 import com.google.gwt.maps.client.overlay.Overlay;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.core.java.util.Collections;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 
 public class RuvegoBoxPage {
@@ -62,10 +59,12 @@ public class RuvegoBoxPage {
 
 	private static String SRC_ADDRESS = "";
 	private static String DST_ADDRESS = "";
+	
+	private static String CLOSE_INFO = "";
 
-	private static ScrollPanel scrollPanel;
+	protected static ScrollPanel scrollPanel;
 
-	private static Grid grid;
+	protected static Grid grid;
 
 	private static LatLngCallback mapsCallback;
 	private static LatLngCallback mapsAddSrcCallback;
@@ -88,7 +87,7 @@ public class RuvegoBoxPage {
 	private static Waypoint[] waypointWithBoth;
 
 	private static AbsolutePanel routeBriefPanel;
-	
+
 	private static CreateItinerary createItinerary;
 
 	private class BoxResult {
@@ -111,12 +110,14 @@ public class RuvegoBoxPage {
 	private static BoxResultSrcDst dstBox;
 
 	private static Label btnRoute;
-	
+
 	private static HTML htmlBoxItineraryInfo1;
 	private static HTML htmlBoxItineraryInfo2;
 	private static HTML htmlBoxClickHere;
 
 	private static LatLngBounds bounds = LatLngBounds.newInstance();
+	
+	private static PopupPanel confirmPanel; 
 
 	private void setTotalDistDuration(String dist, String duration) {
 		lblTotalDistance.setHTML("Total Distance : " + dist);
@@ -217,7 +218,7 @@ public class RuvegoBoxPage {
 
 	private static Overlay srcMarker;
 	private static Overlay dstMarker;
-	
+
 	private static LatLng srcPoint;
 	private static LatLng dstPoint;
 
@@ -245,32 +246,30 @@ public class RuvegoBoxPage {
 				mapRoute();
 			}
 		});
-		
+
 		htmlBoxItineraryInfo1 = new HTML("*To plan your multi-day activities, create an itinerary using the menu.");
 		htmlBoxClickHere = new HTML("<a href=\"javascript:undefined;\">Click Here</a>");
 		htmlBoxItineraryInfo2 = new HTML("to save this as a 1-day itinerary");
-		
+
 		htmlBoxItineraryInfo1.setStyleName("boxItineraryInfo");
 		htmlBoxClickHere.setStyleName("boxItineraryInfo");
 		htmlBoxItineraryInfo2.setStyleName("boxItineraryInfo");
-		
-		
+
+
 		RootPanel.get().add(htmlBoxItineraryInfo1, Ruvego.getIndent(), Window.getClientHeight() - Ruvego.getFooterHeight() - 20);
 		RootPanel.get().add(htmlBoxClickHere, htmlBoxItineraryInfo1.getAbsoluteLeft() + htmlBoxItineraryInfo1.getOffsetWidth() + 5, 
 				Window.getClientHeight() - Ruvego.getFooterHeight() - 20);
 		RootPanel.get().add(htmlBoxItineraryInfo2, htmlBoxClickHere.getAbsoluteLeft() + htmlBoxClickHere.getOffsetWidth() + 5, 
 				Window.getClientHeight() - Ruvego.getFooterHeight() - 20);
-		
+
 		htmlBoxClickHere.addClickHandler(new ClickHandler() {
-			
+
 			@Override
 			public void onClick(ClickEvent event) {
 				createItinerary = CreateItinerary.getPage();
 				createItinerary.panelsOneDayView();
 			}
 		});
-		
-		
 
 		mapsAddSrcCallback = new LatLngCallback() {
 
@@ -287,7 +286,7 @@ public class RuvegoBoxPage {
 				Ruvego.getMapWidget().addOverlay(srcMarker);
 				bounds.extend(point);
 				Ruvego.getMapWidget().setCenter(bounds.getCenter(), Ruvego.getMapWidget().getBoundsZoomLevel(bounds));
-				
+
 				srcBox.lblPosition.setText("A");
 				changePositions(65);
 			}
@@ -388,6 +387,62 @@ public class RuvegoBoxPage {
 			}
 		});
 
+		confirmPanel = new PopupPanel(true, true);
+		confirmPanel.setWidth("150px");
+		confirmPanel.setStyleName("confirmPopUpPanel");
+		confirmPanel.setGlassEnabled(true);
+		confirmPanel.setGlassStyleName("popUpPanel");
+
+		
+		FlexTable confirmContentPanel = new FlexTable();
+		confirmContentPanel.setPixelSize(150, 70);
+		
+		Label lblConfirmText = new Label("Are you sure?");
+		lblConfirmText.setStyleName("greyText");
+		confirmContentPanel.setWidget(0, 0, lblConfirmText);
+		
+		Label btnYes = new Label("Yes");
+		btnYes.setStyleName("btnConfirm");
+		
+		btnYes.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				moveEntriesUp(Integer.parseInt(CLOSE_INFO), boxValueCount - 1);
+				boxResult[--boxValueCount].boxResultPanel.clear();
+				boxResult[boxValueCount].boxResultPanel.removeFromParent();
+				waypoint = new Waypoint[boxValueCount];
+				for (int i = 0; i < boxValueCount; i++) {
+					waypoint[i] = new Waypoint(boxResult[i].address.getText());
+				}
+				boxResult[boxValueCount] = null;
+
+				confirmPanel.setVisible(false);
+			}
+		});
+		
+		Label btnNo = new Label("No");
+		btnNo.setStyleName("btnConfirm");
+		
+		btnNo.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				confirmPanel.setVisible(false);
+			}
+		});
+		
+		confirmContentPanel.setWidget(1, 0, btnYes);
+		confirmContentPanel.getFlexCellFormatter().setAlignment(1, 0, HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		confirmContentPanel.getFlexCellFormatter().setAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		confirmContentPanel.setWidget(1, 1, btnNo);
+		
+		confirmContentPanel.getFlexCellFormatter().setColSpan(0, 0, 2);
+		confirmPanel.add(confirmContentPanel);
+		
+		RootPanel.get().add(confirmPanel);
+		confirmPanel.center();
+		confirmPanel.setVisible(false);
 
 		setupRouteBriefPanel();
 
@@ -432,7 +487,7 @@ public class RuvegoBoxPage {
 			for (int i = 0; i < boxValueCount; i++) {
 				waypointWithSrc[i + 1] = waypoint[i];
 			}
-			
+
 			waypointWithSrc[0] = new Waypoint(srcPoint);
 
 			if (!DST_ADDRESS.equalsIgnoreCase("")) {
@@ -453,7 +508,7 @@ public class RuvegoBoxPage {
 			routeBriefPanel.setVisible(false);
 			return;
 		} 
-		
+
 		Ruvego.errorDisplayClear();
 		Directions.loadFromWaypoints(waypoint, opts, directionsCallback);
 
@@ -484,7 +539,7 @@ public class RuvegoBoxPage {
 
 			grid.resizeRows(boxValueCount + 2);
 
-			
+
 			String entryDelims = "<;;>";
 			String[] entry;
 			String cookieItems = Cookies.getCookie("itemsdata");
@@ -507,7 +562,7 @@ public class RuvegoBoxPage {
 				boxResult[i].boxResultPanel.setSize("100%", 100 + "px");
 				grid.setWidget(i + 1, 0, boxResult[i].boxResultPanel);
 
-				if (i % 2 == 1) {
+				if (i % 2 == 0) {
 					boxResult[i].boxResultPanel.setStyleName("boxResultPanelEven");
 				}
 
@@ -534,7 +589,7 @@ public class RuvegoBoxPage {
 
 				boxResult[i].itineraryEntryMenu = new ItineraryEntryMenu(boxResult[i].boxResultPanel, 
 						boxResult[i].address.getAbsoluteTop() - boxResult[i].boxResultPanel.getAbsoluteTop() + boxResult[i].address.getOffsetHeight() + 2,
-							i);
+						i);
 
 				boxResult[i].routeInfo = new HTML("");
 				boxResult[i].routeInfo.setStyleName("routeInfoText");
@@ -552,31 +607,22 @@ public class RuvegoBoxPage {
 
 					@Override
 					public void onClick(ClickEvent event) {
+						confirmPanel.setVisible(true);
+						confirmPanel.show();
+						confirmPanel.center();
+						
 						Ruvego.getMapWidget().clearOverlays();
 						Image img = (Image) event.getSource();
 						String fieldsDelims = "<;;>";
 						String[] fields;
 
 						fields = ((String) img.getLayoutData()).split(fieldsDelims);
-						System.out.println("Deleting address for index : " + Integer.parseInt(fields[0]) + fields[1]);
-
-						moveEntriesUp(Integer.parseInt(fields[0]), boxValueCount - 1);
-						boxResult[--boxValueCount].boxResultPanel.clear();
-						boxResult[boxValueCount].boxResultPanel.removeFromParent();
-						waypoint = new Waypoint[boxValueCount];
-						for (int i = 0; i < boxValueCount; i++) {
-							waypoint[i] = new Waypoint(boxResult[i].address.getText());
-						}
-						boxResult[boxValueCount] = null;
+						CLOSE_INFO = fields[0];
 					}
 				});
 			}
 
 			setupDstBoxPanel();
-
-
-
-
 		}
 
 		panelAlignments();
@@ -585,228 +631,225 @@ public class RuvegoBoxPage {
 	private void setupDstBoxPanel() {
 		if (dstBox == null) {
 			dstBox = new BoxResultSrcDst();
-		}
 
-		grid.setWidget(boxValueCount + 1, 0, dstBox.boxResultPanel);
+			grid.setWidget(boxValueCount + 1, 0, dstBox.boxResultPanel);
+			dstBox.name.setHTML("End Point");
 
-		dstBox.name.setHTML("End Point");
+			dstBox.img.setPixelSize(35, 25);
+			dstBox.boxResultPanel.add(dstBox.img, BOX_RESULTS_INDENT, 5);
 
-		dstBox.img.setPixelSize(35, 25);
-		dstBox.boxResultPanel.add(dstBox.img, BOX_RESULTS_INDENT, 5);
-
-		//		dstBox.lblPosition.setText(String.valueOf((char)(boxValueCount + 1 + 65)));
-		dstBox.lblPosition.setText("");
-		dstBox.lblPosition.setStyleName("whiteText");
-		dstBox.lblPosition.setWidth("34px");
-		dstBox.boxResultPanel.add(dstBox.lblPosition, BOX_RESULTS_INDENT, 8);
+			//		dstBox.lblPosition.setText(String.valueOf((char)(boxValueCount + 1 + 65)));
+			dstBox.lblPosition.setText("");
+			dstBox.lblPosition.setStyleName("whiteText");
+			dstBox.lblPosition.setWidth("34px");
+			dstBox.boxResultPanel.add(dstBox.lblPosition, BOX_RESULTS_INDENT, 8);
 
 
-		dstBox.name.setStyleName("greyText");
-		dstBox.boxResultPanel.add(dstBox.name, BOX_RESULTS_INDENT + dstBox.img.getOffsetWidth() + 5, 8);
+			dstBox.name.setStyleName("greyText");
+			dstBox.boxResultPanel.add(dstBox.name, BOX_RESULTS_INDENT + dstBox.img.getOffsetWidth() + 5, 8);
 
-		dstBox.boxResultPanel.add(dstBox.suggestBoxAddress, 5, dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
-				+ dstBox.name.getOffsetHeight() + 7);
-		dstBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
-
-
-		dstBox.routeInfo.setStyleName("routeInfoText");
-		dstBox.boxResultPanel.add(dstBox.routeInfo, 20, dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
-				+ dstBox.suggestBoxAddress.getOffsetHeight() + 2);
-
-		dstBox.btnAdd.setPixelSize(40, 24);
-		dstBox.btnAdd.setStyleName("boxBtnAdd");
-		dstBox.boxResultPanel.add(dstBox.btnAdd, dstBox.suggestBoxAddress.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
-				dstBox.suggestBoxAddress.getOffsetWidth(), 
-				dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
-		
-		dstBox.btnClear.setHeight("24px");
-		dstBox.btnClear.setStyleName("boxBtnAdd");
-		dstBox.boxResultPanel.add(dstBox.btnClear, dstBox.btnAdd.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
-				dstBox.btnAdd.getOffsetWidth() + 1, 
-				dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
+			dstBox.boxResultPanel.add(dstBox.suggestBoxAddress, 5, dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
+					+ dstBox.name.getOffsetHeight() + 7);
+			dstBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
 
 
-		dstBox.routeInfo.setHTML("");
+			dstBox.routeInfo.setStyleName("routeInfoText");
+			dstBox.boxResultPanel.add(dstBox.routeInfo, 20, dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
+					+ dstBox.suggestBoxAddress.getOffsetHeight() + 2);
+
+			dstBox.btnAdd.setPixelSize(40, 24);
+			dstBox.btnAdd.setStyleName("boxBtnAdd");
+			dstBox.boxResultPanel.add(dstBox.btnAdd, dstBox.suggestBoxAddress.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
+					dstBox.suggestBoxAddress.getOffsetWidth(), 
+					dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
+
+			dstBox.btnClear.setHeight("24px");
+			dstBox.btnClear.setStyleName("boxBtnAdd");
+			dstBox.boxResultPanel.add(dstBox.btnClear, dstBox.btnAdd.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
+					dstBox.btnAdd.getOffsetWidth() + 1, 
+					dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
 
 
-		dstBox.btnAdd.addClickHandler(new ClickHandler() {
+			dstBox.routeInfo.setHTML("");
 
-			@Override
-			public void onClick(ClickEvent event) {
-				if (dstBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
-					Ruvego.errorDisplay("Destination address is empty");	
-				}
-				
-				if (!DST_ADDRESS.equalsIgnoreCase(dstBox.suggestBoxAddress.getText())) {
-					if (dstMarker != null) {
-						Ruvego.getMapWidget().removeOverlay(dstMarker);
+
+			dstBox.btnAdd.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					if (dstBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
+						Ruvego.errorDisplay("Destination address is empty");	
 					}
-					DST_ADDRESS = dstBox.suggestBoxAddress.getText();
-					geocoder.getLatLng(DST_ADDRESS, mapsAddDstCallback);
+
+					if (!DST_ADDRESS.equalsIgnoreCase(dstBox.suggestBoxAddress.getText())) {
+						if (dstMarker != null) {
+							Ruvego.getMapWidget().removeOverlay(dstMarker);
+						}
+						DST_ADDRESS = dstBox.suggestBoxAddress.getText();
+						geocoder.getLatLng(DST_ADDRESS, mapsAddDstCallback);
+					}
 				}
+			});
+
+			dstBox.btnClear.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					if (!DST_ADDRESS.equalsIgnoreCase("")) {
+						if (dstMarker != null) {
+							Ruvego.getMapWidget().removeOverlay(dstMarker);
+						}	
+					}
+
+					dstBox.suggestBoxAddress.setText("");
+					DST_ADDRESS = "";
+					Ruvego.errorDisplayClear();
+					dstBox.lblPosition.setText("");
+				}
+			});
+
+			if (boxValueCount % 2 == 1) {
+				dstBox.boxResultPanel.setStyleName("boxResultPanelEven");
 			}
-		});
-		
-		dstBox.btnClear.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				if (!DST_ADDRESS.equalsIgnoreCase("")) {
-					if (dstMarker != null) {
-						Ruvego.getMapWidget().removeOverlay(dstMarker);
-					}	
+
+			srcDstSame = new CheckBox("same as start point");
+			srcDstSame.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					if (srcDstSame.getValue() == true) {
+						dstBox.suggestBoxAddress.setText(SRC_ADDRESS);
+					} else {
+						dstBox.suggestBoxAddress.setText("");
+					}
 				}
 
-				dstBox.suggestBoxAddress.setText("");
-				DST_ADDRESS = "";
-				Ruvego.errorDisplayClear();
-				dstBox.lblPosition.setText("");
+			});
+
+			dstBox.boxResultPanel.add(srcDstSame, dstBox.name.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + dstBox.name.getOffsetWidth() + 5, 
+					dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
+			srcDstSame.setStyleName("srcDstInfoText");
+
+			if (boxValueCount % 2 == 0) {
+				dstBox.boxResultPanel.setStyleName("boxResultPanelEven");
 			}
-		});
+		} else {
+			grid.setWidget(boxValueCount + 1, 0, dstBox.boxResultPanel);
+		}
 
 		dstBox.boxResultPanel.setSize("100%", (dstBox.routeInfo.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() + 
 				dstBox.routeInfo.getOffsetHeight() + 5) + "px");
 
-
-		if (boxValueCount % 2 == 1) {
-			dstBox.boxResultPanel.setStyleName("boxResultPanelEven");
-		}
-		
-		srcDstSame = new CheckBox("same as start point");
-		srcDstSame.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-
-			@Override
-			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				if (srcDstSame.getValue() == true) {
-					dstBox.suggestBoxAddress.setText(SRC_ADDRESS);
-				} else {
-					dstBox.suggestBoxAddress.setText("");
-				}
-			}
-
-		});
-
-
-
-		dstBox.boxResultPanel.add(srcDstSame, dstBox.name.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + dstBox.name.getOffsetWidth() + 5, 
-				dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
-		srcDstSame.setStyleName("srcDstInfoText");
 
 	}
 
 	private void setupSrcBoxPanel() {
 		if (srcBox == null) {
 			srcBox = new BoxResultSrcDst();
-		}
 
-		grid.setWidget(0, 0, srcBox.boxResultPanel);
+			grid.setWidget(0, 0, srcBox.boxResultPanel);
 
-		srcBox.name.setHTML("Start Point");
+			srcBox.name.setHTML("Start Point");
 
-		srcBox.img.setPixelSize(35, 25);
-		srcBox.boxResultPanel.add(srcBox.img, BOX_RESULTS_INDENT, 5);
+			srcBox.img.setPixelSize(35, 25);
+			srcBox.boxResultPanel.add(srcBox.img, BOX_RESULTS_INDENT, 5);
 
-		//		srcBox.lblPosition.setText(String.valueOf((char)(boxValueCount + 1 + 65)));
-		srcBox.lblPosition.setText("");
-		srcBox.lblPosition.setStyleName("whiteText");
-		srcBox.lblPosition.setWidth("34px");
-		srcBox.boxResultPanel.add(srcBox.lblPosition, BOX_RESULTS_INDENT, 8);
-
-
-		srcBox.name.setStyleName("greyText");
-		srcBox.boxResultPanel.add(srcBox.name, BOX_RESULTS_INDENT + srcBox.img.getOffsetWidth() + 5, 8);
-
-		srcBox.boxResultPanel.add(srcBox.suggestBoxAddress, 5, srcBox.name.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
-				+ srcBox.name.getOffsetHeight() + 7);
-		srcBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
+			//		srcBox.lblPosition.setText(String.valueOf((char)(boxValueCount + 1 + 65)));
+			srcBox.lblPosition.setText("");
+			srcBox.lblPosition.setStyleName("whiteText");
+			srcBox.lblPosition.setWidth("34px");
+			srcBox.boxResultPanel.add(srcBox.lblPosition, BOX_RESULTS_INDENT, 8);
 
 
-		srcBox.routeInfo.setStyleName("routeInfoText");
-		srcBox.boxResultPanel.add(srcBox.routeInfo, 20, srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
-				+ srcBox.suggestBoxAddress.getOffsetHeight() + 2);
+			srcBox.name.setStyleName("greyText");
+			srcBox.boxResultPanel.add(srcBox.name, BOX_RESULTS_INDENT + srcBox.img.getOffsetWidth() + 5, 8);
 
-		srcBox.btnAdd.setPixelSize(40, 24);
-		srcBox.btnAdd.setStyleName("boxBtnAdd");
-		srcBox.boxResultPanel.add(srcBox.btnAdd, srcBox.suggestBoxAddress.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
-				srcBox.suggestBoxAddress.getOffsetWidth(), 
-				srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
-		
-		srcBox.btnClear.setHeight("24px");
-		srcBox.btnClear.setStyleName("boxBtnAdd");
-		srcBox.boxResultPanel.add(srcBox.btnClear, srcBox.btnAdd.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
-				srcBox.btnAdd.getOffsetWidth() + 1, 
-				srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
+			srcBox.boxResultPanel.add(srcBox.suggestBoxAddress, 5, srcBox.name.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
+					+ srcBox.name.getOffsetHeight() + 7);
+			srcBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
 
 
-		srcBox.routeInfo.setHTML("");
+			srcBox.routeInfo.setStyleName("routeInfoText");
+			srcBox.boxResultPanel.add(srcBox.routeInfo, 20, srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
+					+ srcBox.suggestBoxAddress.getOffsetHeight() + 2);
+
+			srcBox.btnAdd.setPixelSize(40, 24);
+			srcBox.btnAdd.setStyleName("boxBtnAdd");
+			srcBox.boxResultPanel.add(srcBox.btnAdd, srcBox.suggestBoxAddress.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
+					srcBox.suggestBoxAddress.getOffsetWidth(), 
+					srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
+
+			srcBox.btnClear.setHeight("24px");
+			srcBox.btnClear.setStyleName("boxBtnAdd");
+			srcBox.boxResultPanel.add(srcBox.btnClear, srcBox.btnAdd.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
+					srcBox.btnAdd.getOffsetWidth() + 1, 
+					srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
 
 
-		srcBox.btnAdd.addClickHandler(new ClickHandler() {
+			srcBox.routeInfo.setHTML("");
 
-			@Override
-			public void onClick(ClickEvent event) {
-				if (srcBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
-					Ruvego.errorDisplay("Source address is empty");	
-				}
 
-				if (!SRC_ADDRESS.equalsIgnoreCase(srcBox.suggestBoxAddress.getText())) {
-					if (srcMarker != null) {
-						Ruvego.getMapWidget().removeOverlay(srcMarker);
+			srcBox.btnAdd.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					if (srcBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
+						Ruvego.errorDisplay("Source address is empty");	
 					}
-					SRC_ADDRESS = srcBox.suggestBoxAddress.getText();
-					geocoder.getLatLng(SRC_ADDRESS, mapsAddSrcCallback);
+
+					if (!SRC_ADDRESS.equalsIgnoreCase(srcBox.suggestBoxAddress.getText())) {
+						if (srcMarker != null) {
+							Ruvego.getMapWidget().removeOverlay(srcMarker);
+						}
+						SRC_ADDRESS = srcBox.suggestBoxAddress.getText();
+						geocoder.getLatLng(SRC_ADDRESS, mapsAddSrcCallback);
+					}
 				}
-			}
-		});
-		
-		srcBox.btnClear.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				if (!SRC_ADDRESS.equalsIgnoreCase("")) {
-					if (srcMarker != null) {
-						Ruvego.getMapWidget().removeOverlay(srcMarker);
-					}	
+			});
+
+			srcBox.btnClear.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					if (!SRC_ADDRESS.equalsIgnoreCase("")) {
+						if (srcMarker != null) {
+							Ruvego.getMapWidget().removeOverlay(srcMarker);
+						}	
+					}
+
+					srcBox.suggestBoxAddress.setText("");
+					SRC_ADDRESS = "";
+					Ruvego.errorDisplayClear();
+					srcBox.lblPosition.setText("");
+					changePositions(64);
 				}
-
-				srcBox.suggestBoxAddress.setText("");
-				SRC_ADDRESS = "";
-				Ruvego.errorDisplayClear();
-				srcBox.lblPosition.setText("");
-				changePositions(64);
-			}
-		});
+			});
 
 
-		/*
+			/*
 		srcBox.routeInfo.setHTML((char)(count + 65) + " to " + (char)(count + 65 + 1) + " : " + 
 				route.getDistance().inLocalizedUnits() + " (" +
 				route.getDuration().inLocalizedUnits() + ")");
-		 */
+			 */
+		} else {
+			grid.setWidget(0, 0, srcBox.boxResultPanel);
+		}
+		
 		srcBox.boxResultPanel.setSize("100%", (srcBox.routeInfo.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() + 
 				srcBox.routeInfo.getOffsetHeight() + 5) + "px");
-
-
-		if (boxValueCount % 2 == 1) {
-			srcBox.boxResultPanel.setStyleName("boxResultPanelEven");
-		}
-	}
-
-	protected void deleteEntry(int num) {
-		// TODO Auto-generated method stub
-
 	}
 
 	private void panelAlignments() {
-		Ruvego.setMapsPosition(BOX_PANEL_WIDTH, SRC_DST_PANEL_HEIGHT);
 		Ruvego.setMinimumPageHeight(RuvegoHomePage.HOMEPAGE_PAGE_HEIGHT);
 		Ruvego.panelAlignments();
 		panelResizeAlignments();
 	}
 
-	private void panelResizeAlignments() {
+	public static void panelResizeAlignments() {
 		scrollPanel.setHeight((Ruvego.getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 3) + "px");
 		Ruvego.getMapsPanel().setWidgetPosition(btnRoute, Ruvego.getMapsPanel().getOffsetWidth() - 80, Ruvego.getMapsPanel().getOffsetHeight() - 60);
+		Ruvego.setMapsPosition(BOX_PANEL_WIDTH, SRC_DST_PANEL_HEIGHT);
+		scrollPanel.setPixelSize(BOX_PANEL_WIDTH, Window.getClientHeight() - Ruvego.getOtherWidgetTop() - Ruvego.getFooterHeight() - SRC_DST_PANEL_HEIGHT - 3);
 	}
 
 	protected static void reorganizePositions(int currentPos, int newPos) {
@@ -882,7 +925,14 @@ public class RuvegoBoxPage {
 		htmlBoxClickHere.setVisible(true);
 		htmlBoxItineraryInfo1.setVisible(true);
 		htmlBoxItineraryInfo2.setVisible(true);
-		fetchBoxResults();
+	}
+
+	public static void panelsItineraryView() {
+		scrollPanel.setVisible(true);
+		btnRoute.setVisible(true);
+		htmlBoxClickHere.setVisible(false);
+		htmlBoxItineraryInfo1.setVisible(false);
+		htmlBoxItineraryInfo2.setVisible(false);
 	}
 
 	public void clearContent() {

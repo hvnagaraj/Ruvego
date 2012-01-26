@@ -19,6 +19,7 @@ public class ItineraryPage {
 	private ItineraryPage() {
 		itineraryPanel = new ScrollPanel();
 		
+		
 	}
 
 }

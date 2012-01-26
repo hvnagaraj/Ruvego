@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -24,6 +25,8 @@ public class CreateItinerary {
 
 	private static String ITINERARY_NAME = "";
 	private static String NUM_DAYS = "";
+	private static String START_DATE = "";
+	private static boolean FROM_BOX_PAGE = false;
 
 	private static PopupPanel popUpPanel;
 	private static VerticalPanel createItineraryPanel;
@@ -37,9 +40,7 @@ public class CreateItinerary {
 	private static TextBox txtBoxName;
 	private static ListBox listNumDays;
 	private static DateBox dateBoxStartDate;
-	private static DateBox dateBoxEndDate;
 	
-	private static VerticalPanel vEndDatePanel;
 	private static Label lblStartDate;
 	private static VerticalPanel vNumDaysPanel;
 
@@ -98,17 +99,6 @@ public class CreateItinerary {
 		vStartDatePanel.add(dateBoxStartDate);
 		createItineraryPanel.add(vStartDatePanel);
 
-		vEndDatePanel = new VerticalPanel();
-		Label lblEndDate = new Label("End Date");
-		vEndDatePanel.add(lblEndDate);
-		lblEndDate.setStyleName("silverContributeText");
-
-		dateBoxEndDate = new DateBox();
-		dateBoxEndDate.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("MM/dd/yyyy")));
-
-		vEndDatePanel.add(dateBoxEndDate);
-		createItineraryPanel.add(vEndDatePanel);
-
 		HorizontalPanel savePanel = new HorizontalPanel();
 		Image imgSave = new Image("Images/saveicon.png");
 		imgSave.setStyleName("imgLogo");
@@ -133,9 +123,14 @@ public class CreateItinerary {
 					infoCreateItinerary("Itinerary name already exists. Use a different name");
 					return;
 				}
+				
 				Ruvego.setItineraryText(ITINERARY_NAME);
 				Ruvego.itineraryNamePanelAlignments();
+				
+				History.newItem("itineraryView=?" + ITINERARY_NAME);
+				gridDataReorganize();
 				System.out.println("Client: Successfullly created itinerary");
+
 			}
 		};
 
@@ -153,17 +148,18 @@ public class CreateItinerary {
 						return;
 					}
 
-					if (listNumDays.getSelectedIndex() == 0) {
-						infoCreateItinerary("Choose the number of days");
-						return;
+					if (vNumDaysPanel.isVisible() && listNumDays.getSelectedIndex() == 0) {
+							infoCreateItinerary("Choose the number of days");
+							return;
 					}
 
 					createItineraryPacket = new CreateItineraryPacket(txtBoxName.getText(), NUM_DAYS, 
-							dateBoxStartDate.getTextBox().getText(), dateBoxEndDate.getTextBox().getText(), LoginModule.getUsername());  
+							dateBoxStartDate.getTextBox().getText(), LoginModule.getUsername());  
 
 					ITINERARY_NAME = txtBoxName.getText();
-
-					RuvegoContribute.getResultsWriteService().writeCreateItinerary(createItineraryPacket, callbackCreateItinerary);
+					START_DATE = dateBoxStartDate.getTextBox().getValue();
+					
+					Ruvego.getResultsWriteService().writeCreateItinerary(createItineraryPacket, callbackCreateItinerary);
 
 				}
 
@@ -187,6 +183,37 @@ public class CreateItinerary {
 		});
 	}
 
+	protected void gridDataReorganize() {
+		int numDays = Integer.parseInt(NUM_DAYS);
+		
+		System.out.println("Re organizing grid");
+		
+		Ruvego.boxView = RuvegoBoxPage.getPage();
+		RuvegoBoxPage.panelsItineraryView();
+		RuvegoBoxPage.grid.resizeRows(numDays + 2);
+		
+		if (FROM_BOX_PAGE == true) {
+			RuvegoBoxPage.grid.insertRow(0);
+			
+			Label lblDayOneInfo = new Label("Day 1  ----- " + START_DATE);
+			lblDayOneInfo.setStyleName("lblItineraryDayInfo");
+			lblDayOneInfo.setWidth("100%");
+			RuvegoBoxPage.grid.setWidget(0, 0, lblDayOneInfo);			
+		} else {
+			for (int i = 0; i < numDays; i++) {
+				Label lblDayInfo = new Label("Day " + (i + 1) + "  ----- " + START_DATE);
+				lblDayInfo.setStyleName("lblItineraryDayInfo");
+				lblDayInfo.setWidth("100%");
+				RuvegoBoxPage.grid.setWidget(i, 0, lblDayInfo);	
+			}
+			
+		}
+		
+		
+		RuvegoBoxPage.panelResizeAlignments();
+		Ruvego.panelAlignments();
+	}
+
 	public void infoCreateItinerary(String text) {
 		lblError.setText(text);
 	}
@@ -198,18 +225,19 @@ public class CreateItinerary {
 	}
 	
 	public void panelsMultiDayView() {
+		Ruvego.setMapsPosition(RuvegoBoxPage.BOX_PANEL_WIDTH, RuvegoBoxPage.SRC_DST_PANEL_HEIGHT);
 		panelsView();
 		vNumDaysPanel.setVisible(true);
-		vEndDatePanel.setVisible(true);
 		lblStartDate.setText("Start Date");
+		FROM_BOX_PAGE = false;
 	}
 	
 	public void panelsOneDayView() {
 		panelsView();
 		vNumDaysPanel.setVisible(false);
-		vEndDatePanel.setVisible(false);
 		lblStartDate.setText("Date");
 		NUM_DAYS = "1";
+		FROM_BOX_PAGE = true;
 	}
 
 	public void clearContent() {
@@ -217,7 +245,6 @@ public class CreateItinerary {
 		txtBoxName.setText("");
 		listNumDays.setSelectedIndex(0);
 		dateBoxStartDate.setValue(null);
-		dateBoxEndDate.setValue(null);
 		infoCreateItinerary("");
 	}
 }

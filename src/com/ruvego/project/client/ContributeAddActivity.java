@@ -580,7 +580,7 @@ public class ContributeAddActivity {
 								listBoxCategory.getItemText(listBoxCategory.getSelectedIndex()), subCategoryData, checkBoxValue,
 								latN, latS, latE, latW, lonN, lonS, lonE, lonW, formattedContact);
 
-						RuvegoContribute.getResultsWriteService().writeResults(writeData, callbackActivitySubmit);
+						Ruvego.getResultsWriteService().writeResults(writeData, callbackActivitySubmit);
 					}
 				});
 			}

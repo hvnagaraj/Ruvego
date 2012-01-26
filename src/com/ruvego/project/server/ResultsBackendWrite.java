@@ -506,6 +506,8 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 
 	@Override
 	public boolean writeCreateItinerary(CreateItineraryPacket createItineraryPacket) {
+		return true;
+		/*
 		BasicDBObject query = new BasicDBObject();
 		query.put("itineraryname", createItineraryPacket.getItineraryName());
 		
@@ -523,6 +525,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		connectDBAndSave(createItineraryPacket.getUsername(), dataObject);
 
 		return true;
+		*/
 	}
 
 }
