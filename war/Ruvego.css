@@ -171,6 +171,16 @@
 	cursor: pointer;
 }
 
+.imgMenu {
+	cursor: pointer;
+}
+
+.imgMenuClick {
+	cursor: pointer;
+	background-color: white;
+	border: 1px solid #313131;
+}
+
 .image {
 	cursor: pointer;
 }
@@ -207,12 +217,6 @@
 	font-size: 14px;
 }
 
-.btnMoreDetails {
-	cursor: pointer;
-	font-family: "Arvo", Helvetica, sans-serif;
-	color: orange;
-	font-size: 14px;
-}
 
 .briefDesc {
 	font-family: "Arvo", Helvetica, sans-serif;
@@ -455,8 +459,7 @@
 }
 
 .menuPanel {
-	background-color: #f0f0f0;
-	border-radius: 4px 4px 4px 0px;
+	background-color: white;
 }
 
 .menuItemText {
@@ -623,6 +626,17 @@
 	border: 0px;
 }
 
+.activityBtnMore {
+	background-color: orange;
+	color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	cursor: pointer;
+	text-align: center;
+	padding: 4px 6px 4px 6px;
+	border: 0px;
+}
+
 .btnConfirm {
 	background-color: #313131;
 	color: white;
@@ -656,6 +670,16 @@
 	border-left: 1px solid #313131;
 	border-right: 1px solid #313131;
 	border-bottom: 1px solid #313131;
+}
+
+.activityBtnMoreClick {
+	background-color: white;
+	color: #313131;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 14px;
+	cursor: pointer;
+	text-align: center;
+	padding: 4px 6px 4px 6px;
 }
 
 .itineraryEntryPopUpPanel {

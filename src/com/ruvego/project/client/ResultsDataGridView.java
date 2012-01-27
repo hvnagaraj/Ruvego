@@ -58,7 +58,6 @@ public class ResultsDataGridView {
 
 	static private AbsolutePanel timingsPanel = new AbsolutePanel();
 	static private AbsolutePanel infoPanel = new AbsolutePanel();
-	static private Label btnMoreDetails;
 
 	static private AsyncCallback<ResultsPacket[]> activityResulstCallback;
 
@@ -190,9 +189,6 @@ public class ResultsDataGridView {
 
 		resultsBriefPanel.setWidgetPosition(htmlAddress, 54, htmlName.getOffsetHeight() + htmlName.getAbsoluteTop() - resultsBriefPanel.getAbsoluteTop() + 5);
 
-		resultsBriefPanel.setWidgetPosition(btnMoreDetails, RESULTS_BRIEF_PANEL_WIDTH - btnMoreDetails.getOffsetWidth() - 10, 
-				resultsBriefPanel.getOffsetHeight() - btnMoreDetails.getOffsetHeight() - 10);
-
 		resultsBriefPanel.setWidgetPosition(contact, 54, htmlAddress.getAbsoluteTop() + htmlAddress.getOffsetHeight() - resultsBriefPanel.getAbsoluteTop() + 1);
 
 		resultsBriefPanel.setWidgetPosition(timingsPanel, 0, contact.getAbsoluteTop() + contact.getOffsetHeight() - resultsBriefPanel.getAbsoluteTop() + 5);
@@ -275,15 +271,7 @@ public class ResultsDataGridView {
 				"the opening of the San Francisco Bay into the Pacific Ocean. As part of both U.S. Route 101 and California State Route 1, " +
 				"the structure links the city of San Francisco, on the northern tip of the San Francisco Peninsula, to Marin County.");
 
-		btnMoreDetails = new Label("More details");
-		btnMoreDetails.setStyleName("btnMoreDetails");
-		resultsBriefPanel.add(btnMoreDetails, RESULTS_BRIEF_PANEL_WIDTH - 200, 
-				resultsBriefPanel.getOffsetHeight() - Ruvego.getFooterHeight() - btnMoreDetails.getOffsetHeight());
-
-		btnMoreDetails.setWidth("87px");
-		
 		activityMenu = ResultsActivityMenu.getPage();
-		activityMenu.panelResizeAlignments();
 	}
 
 

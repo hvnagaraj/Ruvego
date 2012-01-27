@@ -117,6 +117,7 @@ public class Ruvego implements EntryPoint {
 	static private RuvegoContribute contributePage = null;
 	static private RuvegoAboutPage aboutPage = null;
 	static protected RuvegoBoxPage boxView = null;
+	static protected ItineraryState itineraryState = null;
 
 	static private ResultsFetchAsync resultsFetchService;
 	static protected ResultsWriteAsync resultsWriteService;
@@ -145,7 +146,7 @@ public class Ruvego implements EntryPoint {
 
 	static private HorizontalPanel itineraryNamePanel;
 
-	static private Label lblItineraryNameText;
+	static protected Label lblItineraryNameText;
 
 	static private Timer timer;
 
@@ -391,6 +392,7 @@ public class Ruvego implements EntryPoint {
 		setSecondHeaderPanel();
 		setFooterPanel();
 		setMapsPanel();
+		setupItineraryState();
 
 		/* Google Maps 
 		 * Should be initialized prio to using geocoding 
@@ -455,6 +457,10 @@ public class Ruvego implements EntryPoint {
 				boxInfoClear();
 			}
 		};
+	}
+
+	private void setupItineraryState() {
+		itineraryState = ItineraryState.getPage();
 	}
 
 	private void setupFacebookModule() {

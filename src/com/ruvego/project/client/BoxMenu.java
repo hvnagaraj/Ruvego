@@ -34,9 +34,10 @@ public class BoxMenu {
 
 	private BoxMenu() {
 		popUpPanel = new PopupPanel(true, true);
+		popUpPanel.setStyleName("itineraryEntryPopUpPanel");
 		
 		imgIcon = new Image("Images/menuwhite.png");
-		imgIcon.setStyleName("imgLogo");
+		imgIcon.setStyleName("imgMenu");
 		
 		Ruvego.getSecondHeaderPanel().add(imgIcon);
 		Ruvego.getSecondHeaderPanel().setWidgetPosition(imgIcon, 5, 7);
@@ -94,14 +95,12 @@ public class BoxMenu {
 	}
 
 	protected void menuHide() {
-		imgIcon.setStyleName("menuNormal");
 		menuInputPanel.setVisible(false);
 		popUpPanel.setVisible(false);
 	}
 
 	protected void menuShow() {
 		menuInputPanel.setVisible(true);	
-		imgIcon.setStyleName("menuNormal:hover");
 		popUpPanel.setVisible(true);
 		popUpPanel.show();
 		RootPanel.get().setWidgetPosition(popUpPanel, 5, imgIcon.getAbsoluteTop() + imgIcon.getOffsetHeight() + 4);

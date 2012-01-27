@@ -1,5 +1,7 @@
 package com.ruvego.project.client;
 
+import java.util.Date;
+
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -7,7 +9,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -17,15 +21,17 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.ruvego.project.shared.CreateItineraryPacket;
+import com.sun.java.swing.plaf.windows.resources.windows;
 
 public class CreateItinerary {
 	private static CreateItinerary page;
 
 	private static String ITINERARY_NAME = "";
 	private static String NUM_DAYS = "";
-	private static String START_DATE = "";
+	private static Date START_DATE;
 	private static boolean FROM_BOX_PAGE = false;
 
 	private static PopupPanel popUpPanel;
@@ -157,7 +163,8 @@ public class CreateItinerary {
 							dateBoxStartDate.getTextBox().getText(), LoginModule.getUsername());  
 
 					ITINERARY_NAME = txtBoxName.getText();
-					START_DATE = dateBoxStartDate.getTextBox().getValue();
+					START_DATE = dateBoxStartDate.getValue(); 
+							//dateBoxStartDate.getTextBox().getValue();
 					
 					Ruvego.getResultsWriteService().writeCreateItinerary(createItineraryPacket, callbackCreateItinerary);
 
@@ -184,13 +191,15 @@ public class CreateItinerary {
 	}
 
 	protected void gridDataReorganize() {
+		RuvegoBoxPage boxPage = RuvegoBoxPage.getPage();
+		
 		int numDays = Integer.parseInt(NUM_DAYS);
 		
 		System.out.println("Re organizing grid");
 		
 		Ruvego.boxView = RuvegoBoxPage.getPage();
 		RuvegoBoxPage.panelsItineraryView();
-		RuvegoBoxPage.grid.resizeRows(numDays + 2);
+		RuvegoBoxPage.grid.resizeRows(numDays + 1);
 		
 		if (FROM_BOX_PAGE == true) {
 			RuvegoBoxPage.grid.insertRow(0);
@@ -200,13 +209,21 @@ public class CreateItinerary {
 			lblDayOneInfo.setWidth("100%");
 			RuvegoBoxPage.grid.setWidget(0, 0, lblDayOneInfo);			
 		} else {
+			DateTimeFormat format = DateTimeFormat.getFormat("MM/dd/yyyy");
+			Date date;
 			for (int i = 0; i < numDays; i++) {
-				Label lblDayInfo = new Label("Day " + (i + 1) + "  ----- " + START_DATE);
+				date = (Date) START_DATE.clone();
+				CalendarUtil.addDaysToDate(date, i);
+				Label lblDayInfo = new Label("Day " + (i + 1) + "  ----- " + format.format(date));
 				lblDayInfo.setStyleName("lblItineraryDayInfo");
 				lblDayInfo.setWidth("100%");
 				RuvegoBoxPage.grid.setWidget(i, 0, lblDayInfo);	
 			}
 			
+			RuvegoBoxPage.grid.insertRow(1);
+			boxPage.setupSrcBoxPanel(1);
+			
+			boxPage.setupDstBoxPanel(numDays + 1);
 		}
 		
 		

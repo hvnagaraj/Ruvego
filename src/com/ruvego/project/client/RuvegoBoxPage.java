@@ -550,7 +550,7 @@ public class RuvegoBoxPage {
 
 			boxResult = new BoxResult[boxValueCount];
 
-			setupSrcBoxPanel();
+			setupSrcBoxPanel(0);
 
 			for (int i = 0; i < boxValueCount; i++) {
 				String fieldsDelims = "<;>";
@@ -622,17 +622,17 @@ public class RuvegoBoxPage {
 				});
 			}
 
-			setupDstBoxPanel();
+			setupDstBoxPanel(boxValueCount + 1);
 		}
 
 		panelAlignments();
 	}
 
-	private void setupDstBoxPanel() {
+	protected void setupDstBoxPanel(int position) {
 		if (dstBox == null) {
 			dstBox = new BoxResultSrcDst();
 
-			grid.setWidget(boxValueCount + 1, 0, dstBox.boxResultPanel);
+			grid.setWidget(position, 0, dstBox.boxResultPanel);
 			dstBox.name.setHTML("End Point");
 
 			dstBox.img.setPixelSize(35, 25);
@@ -743,11 +743,11 @@ public class RuvegoBoxPage {
 
 	}
 
-	private void setupSrcBoxPanel() {
+	public void setupSrcBoxPanel(int position) {
 		if (srcBox == null) {
 			srcBox = new BoxResultSrcDst();
 
-			grid.setWidget(0, 0, srcBox.boxResultPanel);
+			grid.setWidget(position, 0, srcBox.boxResultPanel);
 
 			srcBox.name.setHTML("Start Point");
 
