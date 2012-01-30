@@ -26,7 +26,10 @@ public class ItineraryEntryMenu {
 	
 	private int entryPosition = 0;
 	
-	public ItineraryEntryMenu(AbsolutePanel panel, int posVertical, int entryNum) {
+	private DayActivityPlan dayActivityPlan;
+	
+	public ItineraryEntryMenu(AbsolutePanel panel, int posVertical, int entryNum, DayActivityPlan temp) {
+		dayActivityPlan = temp;
 		boxResultPanel = panel;
 		entryPosition = entryNum + 1;
 		
@@ -71,8 +74,9 @@ public class ItineraryEntryMenu {
 			@Override
 			public void onClick(ClickEvent event) {
 				menuHide();
+				
 				/* Adding -1 beacuse the arrays start from 0. But GUI display starts from 1 */
-				RuvegoBoxPage.reorganizePositions(entryPosition - 1, Integer.parseInt(txtBoxMove.getText()) - 1);
+				dayActivityPlan.reorganizePositions(entryPosition - 1, Integer.parseInt(txtBoxMove.getText()) - 1);
 			}
 		});
 		

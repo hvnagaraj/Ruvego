@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -49,6 +50,8 @@ public class CreateItinerary {
 	
 	private static Label lblStartDate;
 	private static VerticalPanel vNumDaysPanel;
+	
+	private static ItineraryPage itineraryPage;
 
 	public static CreateItinerary getPage() {
 		if (page == null) {
@@ -134,7 +137,7 @@ public class CreateItinerary {
 				Ruvego.itineraryNamePanelAlignments();
 				
 				History.newItem("itineraryView=?" + ITINERARY_NAME);
-				gridDataReorganize();
+				createItinerary();
 				System.out.println("Client: Successfullly created itinerary");
 
 			}
@@ -190,45 +193,31 @@ public class CreateItinerary {
 		});
 	}
 
-	protected void gridDataReorganize() {
-		RuvegoBoxPage boxPage = RuvegoBoxPage.getPage();
+	protected void createItinerary() {
+		itineraryPage = ItineraryPage.getPage();
 		
 		int numDays = Integer.parseInt(NUM_DAYS);
 		
 		System.out.println("Re organizing grid");
-		
-		Ruvego.boxView = RuvegoBoxPage.getPage();
-		RuvegoBoxPage.panelsItineraryView();
-		RuvegoBoxPage.grid.resizeRows(numDays + 1);
+
 		
 		if (FROM_BOX_PAGE == true) {
-			RuvegoBoxPage.grid.insertRow(0);
+			String entryDelims = "<;;>";
+			String[] entry;
+			String cookieItems = Cookies.getCookie("itemsdata");
+
+			entry = cookieItems.split(entryDelims);
 			
-			Label lblDayOneInfo = new Label("Day 1  ----- " + START_DATE);
-			lblDayOneInfo.setStyleName("lblItineraryDayInfo");
-			lblDayOneInfo.setWidth("100%");
-			RuvegoBoxPage.grid.setWidget(0, 0, lblDayOneInfo);			
+			itineraryPage.setupItinerary(1, START_DATE, entry, RuvegoBoxPage.boxValueCount);
+			
 		} else {
-			DateTimeFormat format = DateTimeFormat.getFormat("MM/dd/yyyy");
-			Date date;
-			for (int i = 0; i < numDays; i++) {
-				date = (Date) START_DATE.clone();
-				CalendarUtil.addDaysToDate(date, i);
-				Label lblDayInfo = new Label("Day " + (i + 1) + "  ----- " + format.format(date));
-				lblDayInfo.setStyleName("lblItineraryDayInfo");
-				lblDayInfo.setWidth("100%");
-				RuvegoBoxPage.grid.setWidget(i, 0, lblDayInfo);	
-			}
-			
-			RuvegoBoxPage.grid.insertRow(1);
-			boxPage.setupSrcBoxPanel(1);
-			
-			boxPage.setupDstBoxPanel(numDays + 1);
+			itineraryPage.setupItinerary(numDays, START_DATE, null, 0);
 		}
 		
 		
 		RuvegoBoxPage.panelResizeAlignments();
 		Ruvego.panelAlignments();
+		
 	}
 
 	public void infoCreateItinerary(String text) {
@@ -242,7 +231,7 @@ public class CreateItinerary {
 	}
 	
 	public void panelsMultiDayView() {
-		Ruvego.setMapsPosition(RuvegoBoxPage.BOX_PANEL_WIDTH, RuvegoBoxPage.SRC_DST_PANEL_HEIGHT);
+		Ruvego.setMapsPosition(DayActivityPlan.BOX_PANEL_WIDTH, RuvegoBoxPage.BOTTOM_BLANK_HEIGHT);
 		panelsView();
 		vNumDaysPanel.setVisible(true);
 		lblStartDate.setText("Start Date");

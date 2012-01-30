@@ -28,7 +28,7 @@ public class LoginModule {
 	protected static int FACEBOOK_LEFT = 0;
 	protected static int FACEBOOK_TOP = 0;
 	private static final int LEFT_DETAILS_INDENT = 20;
-	
+
 	private static boolean USER_AUTHENTICATED = false;
 	private static String USERNAME;
 
@@ -57,11 +57,11 @@ public class LoginModule {
 		}
 		return module;
 	}
-	
+
 	public static boolean isUserAuthenticated() {
 		return USER_AUTHENTICATED;
 	}
-	
+
 	public static String getUsername() {
 		return USERNAME;
 	}
@@ -239,11 +239,11 @@ public class LoginModule {
 
 		loginPopUpPanel.addAutoHidePartner(loginWrapper.getElement());
 		logoutPopUpPanel.addAutoHidePartner(loginWrapper.getElement());
-		
+
 		loginPanelAlignments();
 		hideLogin();
 		hideLogout();
-		
+
 	}
 
 	protected void showLogout() {
@@ -332,8 +332,13 @@ public class LoginModule {
 
 
 	public static void panelALignments() {
-		loginPanelAlignments();
-		logoutPanelAlignments();
+		if (loginDetails.isVisible()) {
+			loginPanelAlignments();	
+		}
+
+		if (loginDetails.isVisible()) {
+			logoutPanelAlignments();
+		}
 	}
 
 }

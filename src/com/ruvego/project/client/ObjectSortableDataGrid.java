@@ -27,8 +27,6 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 	
 	private SingleSelectionModel<T> selectionModel;
 	
-	ResultsFetchAsync resultsFetchService = GWT.create(ResultsFetch.class);
-
 	public ObjectSortableDataGrid(AbsolutePanel activityResultsPanel, ResultsPacket[] result, int numCols) {
 		super(activityResultsPanel, result, numCols);
 	}
@@ -163,7 +161,9 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 						Ruvego.getMapWidget().setCenter(point, 13);
 				        Marker marker = new Marker(point);
 				        Ruvego.getMapWidget().addOverlay(marker);
-				        info.open(marker, new InfoWindowContent(result.getaddress()));
+				        
+				        Ruvego.lblInfoWindow.setText(result.getaddress());
+				        info.open(marker, Ruvego.infoWindow);
 					}
 					
 				});
@@ -185,7 +185,7 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 			public void onSelectionChange(SelectionChangeEvent event) {
 				ResultsColumnData selected = (ResultsColumnData) selectionModel.getSelectedObject();
 				if (selected != null) {
-					resultsFetchService.fetchBriefPanelResults(selected.getCol1(), callbackBriefPanelResults);
+					Ruvego.getResultsFetchAsync().fetchBriefPanelResults(selected.getCol1(), callbackBriefPanelResults);
 				}
 			}
 		});

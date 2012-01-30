@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import javax.naming.directory.SearchControls;
 
 import com.google.gwt.maps.client.GoogleBarOptions;
+import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapOptions;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
@@ -149,6 +150,12 @@ public class Ruvego implements EntryPoint {
 	static protected Label lblItineraryNameText;
 
 	static private Timer timer;
+	
+	private static DayActivityPlan dayActivityPlan;
+	
+	protected static InfoWindowContent infoWindow;
+
+	protected static Label lblInfoWindow;
 
 	public static void setItineraryText(String text) {
 		lblItineraryNameText.setText(text);
@@ -393,6 +400,7 @@ public class Ruvego implements EntryPoint {
 		setFooterPanel();
 		setMapsPanel();
 		setupItineraryState();
+		
 
 		/* Google Maps 
 		 * Should be initialized prio to using geocoding 
@@ -402,9 +410,8 @@ public class Ruvego implements EntryPoint {
 				LatLng city = LatLng.newInstance(37.68889, -100.478611);
 				map = new MapWidget(city, 4);
 				map.zoomIn();
-				//map.setInfoWindowEnabled(true);
-				//map.addControl(new OverviewMapControl());
-				//mapsPanel.add(map);
+				
+				setupInfoWindow();
 				zoomPosRight = new ControlPosition(ControlAnchor.TOP_RIGHT, 10, 10);
 				zoomPosLeft = new ControlPosition(ControlAnchor.TOP_LEFT, 10, 10);
 				zoomControls = new LargeMapControl3D();
@@ -415,31 +422,17 @@ public class Ruvego implements EntryPoint {
 					mapControlsSetLeft();					
 				}
 
-				//map.addOverlay(new Marker(city));
 				rootPanel.add(mapsPanel, indent, OTHER_WIDGET_TOP);
 				map.setSize("100%", "100%");
 
 				geocoder = new Geocoder();
 				mapsPanel.add(map);
-				/*
-				DirectionsPanel directionsPanel = null;
-				DirectionQueryOptions opts = new DirectionQueryOptions(map, 
-						directionsPanel); 
-						    String query = "from: 500 Memorial Dr, Cambridge, MA to: 4 Yawkey Way, Boston, MA"; 
-						    Directions.load(query, null, new DirectionsCallback() { 
-						      public void onFailure(int statusCode) { 
-						        Window.alert("Failed to load directions: Status " 
-						            + StatusCodes.getName(statusCode) + " " + statusCode); 
-						      } 
-						      public void onSuccess(DirectionResults result) { 
-						    	  System.out.println("Distance : " + (String)result.);
-						        GWT.log("Successfully loaded directions.", null); 
-						      } 
-						    }); 
-				 */
 				setupNoContent();
-				managePageHistory();
 				setupFacebookModule();
+				setupDayActvityPlan();
+				
+				/* This should be the last func to be called */
+				managePageHistory();
 
 			}
 		});
@@ -457,6 +450,17 @@ public class Ruvego implements EntryPoint {
 				boxInfoClear();
 			}
 		};
+	}
+
+	protected void setupInfoWindow() {
+		lblInfoWindow = new Label();
+		lblInfoWindow.setStyleName("greyText");
+		lblInfoWindow.setWidth("100%");
+		infoWindow = new InfoWindowContent(lblInfoWindow);
+	}
+
+	private void setupDayActvityPlan() {
+		dayActivityPlan = DayActivityPlan.getPage();
 	}
 
 	private void setupItineraryState() {
