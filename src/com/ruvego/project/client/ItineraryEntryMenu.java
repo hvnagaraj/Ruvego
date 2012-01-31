@@ -24,9 +24,11 @@ public class ItineraryEntryMenu {
 	
 	private HorizontalPanel movePanel;
 	
-	private int entryPosition = 0;
+	protected int entryPosition = 0;
 	
 	private DayActivityPlan dayActivityPlan;
+	
+	private Label lblMoveText;
 	
 	public ItineraryEntryMenu(AbsolutePanel panel, int posVertical, int entryNum, DayActivityPlan temp) {
 		dayActivityPlan = temp;
@@ -56,7 +58,7 @@ public class ItineraryEntryMenu {
 		
 		movePanel = new HorizontalPanel();
 		
-		Label lblMoveText = new Label("Move entry from " + entryPosition + " to ");
+		lblMoveText = new Label("Move entry from " + entryPosition + " to ");
 		lblMoveText.setStyleName("menuItemTextNormal");
 		
 		final TextBox txtBoxMove = new TextBox();
@@ -117,6 +119,12 @@ public class ItineraryEntryMenu {
 		menuHide();
 
 		
+	}
+	
+	
+	protected void updateEntryPosition(int newPos) {
+		entryPosition = newPos;
+		lblMoveText.setText("Move entry from " + entryPosition + " to ");
 	}
 	
 	protected void menuHide() {

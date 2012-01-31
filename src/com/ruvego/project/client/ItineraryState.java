@@ -43,7 +43,4 @@ public class ItineraryState {
 
 	private ItineraryState() {
 	}
-
-
-
 }

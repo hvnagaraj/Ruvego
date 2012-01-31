@@ -25,7 +25,6 @@ public class ItineraryPage {
 	
 	private static Label btnRoute;
 	
-	
 	public static ItineraryPage getPage() {
 		if (page == null) {
 			page = new ItineraryPage();
@@ -91,11 +90,6 @@ public class ItineraryPage {
 			if (i == (numDays - 1)) {
 				itineraryPlan[i].setupDstBoxPanel();
 			}
-			
 		}
-		
-
 	}
-
-
 }
