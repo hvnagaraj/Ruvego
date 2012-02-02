@@ -119,6 +119,7 @@ public class Ruvego implements EntryPoint {
 	static private RuvegoAboutPage aboutPage = null;
 	static protected RuvegoBoxPage boxView = null;
 	static protected ItineraryState itineraryState = null;
+	static private ItineraryPage itineraryPage = null;
 
 	static private ResultsFetchAsync resultsFetchService;
 	static protected ResultsWriteAsync resultsWriteService;
@@ -508,6 +509,9 @@ public class Ruvego implements EntryPoint {
 					} else if (historyToken.contains("boxView")) {
 						formBoxView();
 						mapControlsSetRight();
+					} else if (historyToken.contains("itineraryPage")) {
+						formItineraryPage();
+						mapControlsSetRight();
 					} else {
 						clearOtherPages("homePage");
 					}
@@ -518,6 +522,16 @@ public class Ruvego implements EntryPoint {
 			}
 		});
 
+	}
+
+	protected void formItineraryPage() {
+		clearOtherPages("boxView");
+		if (itineraryPage == null) {
+			itineraryPage = ItineraryPage.getPage();
+		} else {
+			itineraryPage.panelsView();
+		}
+		itineraryPage.fetchResults(Window.Location.getParameter("id"));
 	}
 
 	private void setPlaces() {
@@ -625,6 +639,15 @@ public class Ruvego implements EntryPoint {
 
 		lblItineraryNameText = new Label("Los Angeles Trip");
 		lblItineraryNameText.setStyleName("itineraryActive");
+		
+		lblItineraryNameText.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				ItineraryPage itineraryPage = ItineraryPage.getPage();
+				itineraryPage.panelsView();
+			}
+		});
 
 		itineraryNamePanel.add(lblItineraryName);
 		itineraryNamePanel.add(lblItineraryNameText);

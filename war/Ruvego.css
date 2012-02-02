@@ -403,6 +403,10 @@
 	background-color: #ededed;
 }
 
+.boxResultPanelOdd {
+	background-color: white;
+}
+
 .srcDstInfoText {
 	font-family: "Arvo", Helvetica, sans-serif;
 	color: #313131;
@@ -442,10 +446,12 @@
 }
 
 .routeInfoText {
+	background-color: grey;
+	color: white;
 	font-family: "Arvo", Helvetica, sans-serif;
-	color: black;
 	font-size: 14px;
-	word-wrap: normal;
+	padding: 5px 0px 5px 0px;
+	text-indent: 5px;
 }
 
 .menuNormal {

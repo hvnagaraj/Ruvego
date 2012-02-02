@@ -6,7 +6,7 @@ public class ItineraryState {
 
 	private static boolean ACTIVE_ITINERARY = true;
 
-	private static String ITINERARY_NAME = "";
+	protected static String ITINERARY_NAME = "";
 
 	private static int NUM_DAYS = 10;
 

@@ -3,6 +3,7 @@ package com.ruvego.project.client;
 import java.util.ArrayList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.ruvego.project.shared.ItineraryDataPacket;
 
 public interface ResultsFetchAsync {
 
@@ -30,5 +31,8 @@ public interface ResultsFetchAsync {
 			AsyncCallback<ResultsBriefPanelPacket> callbackBriefPanelResults);
 
 	void authenticateUser(String username, String password, AsyncCallback<Boolean> callbackAuthenticate);
+
+	void fetchItineraryData(String itineraryName,
+			AsyncCallback<ItineraryDataPacket> callbackItineraryResults);
 
 }

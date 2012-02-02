@@ -2,11 +2,16 @@ package com.ruvego.project.server;
 
 
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -19,6 +24,7 @@ import com.ruvego.project.client.CategoryPacket;
 import com.ruvego.project.client.ResultsBriefPanelPacket;
 import com.ruvego.project.client.ResultsFetch;
 import com.ruvego.project.client.ResultsPacket;
+import com.ruvego.project.shared.ItineraryDataPacket;
 
 @SuppressWarnings("serial")
 public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch {
@@ -410,5 +416,22 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		return false;
 	}
 
+	@Override
+	public ItineraryDataPacket fetchItineraryData(String itineraryName) {
+		String[] tempName = new String[2];
+		tempName[0] = "nagaraj";
+		tempName[1] = "hiiiiii";
+		
+		String[] tempAddress = new String[2];
+		tempAddress[0] = "nagaraj";
+		tempAddress[1] = "hiiiiii";
+		
+		ItineraryDataPacket tempPacket = new ItineraryDataPacket(1, "11/12/2011");
+		
+		for (int i = 0; i < 1; i++) {
+			tempPacket.setData(i, 2, tempName, tempAddress);
+		}
+		return tempPacket;
+	}
 }
 

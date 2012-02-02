@@ -123,14 +123,28 @@ public class RuvegoBoxPage {
 			String cookieItems = Cookies.getCookie("itemsdata");
 
 			entry = cookieItems.split(entryDelims);
+
+			String[] nameList = new String[boxValueCount];
+			String[] addressList = new String[boxValueCount];
+
+			String fieldsDelims = "<;>";
+			String[] fields;
+			for (int i = 0; i < boxValueCount; i++) {
+				fields = entry[i].split(fieldsDelims);
+				nameList[i] = fields[0];
+				addressList[i] = fields[1];
+			}
+
 			boxPlan.setupSrcBoxPanel();
-			boxPlan.addResults(entry, boxValueCount);
+			boxPlan.addResults(nameList, addressList, boxValueCount);
 			boxPlan.dayName = "Box";
-			
+			boxPlan.setupDstBoxPanel();
+/*			
 			testPlan = new DayActivityPlan(vPanel);
 			testPlan.addResults(entry, 3);
 			testPlan.dayName = "Day 2";
-			testPlan.setupDstBoxPanel();
+			
+			*/
 		}
 
 		panelAlignments();

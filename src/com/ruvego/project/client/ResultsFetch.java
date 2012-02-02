@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.ruvego.project.shared.ItineraryDataPacket;
 
 @RemoteServiceRelativePath("readResults")
 public interface ResultsFetch extends RemoteService {
@@ -29,5 +30,7 @@ public interface ResultsFetch extends RemoteService {
 	ResultsBriefPanelPacket fetchBriefPanelResults(String name);
 
 	boolean authenticateUser(String username, String password);
+
+	ItineraryDataPacket fetchItineraryData(String itineraryName);
 }
 

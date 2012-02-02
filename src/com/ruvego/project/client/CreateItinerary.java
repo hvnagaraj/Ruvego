@@ -195,29 +195,10 @@ public class CreateItinerary {
 
 	protected void createItinerary() {
 		itineraryPage = ItineraryPage.getPage();
+		itineraryPage.fetchResults(ITINERARY_NAME);
 		
-		int numDays = Integer.parseInt(NUM_DAYS);
-		
-		System.out.println("Re organizing grid");
-
-		
-		if (FROM_BOX_PAGE == true) {
-			String entryDelims = "<;;>";
-			String[] entry;
-			String cookieItems = Cookies.getCookie("itemsdata");
-
-			entry = cookieItems.split(entryDelims);
-			
-			itineraryPage.setupItinerary(1, START_DATE, entry, RuvegoBoxPage.boxValueCount);
-			
-		} else {
-			itineraryPage.setupItinerary(numDays, START_DATE, null, 0);
-		}
-		
-		
-		RuvegoBoxPage.panelResizeAlignments();
+		ItineraryPage.panelResizeAlignments();
 		Ruvego.panelAlignments();
-		
 	}
 
 	public void infoCreateItinerary(String text) {

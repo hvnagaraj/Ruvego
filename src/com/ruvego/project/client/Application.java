@@ -57,7 +57,7 @@ public class Application extends Composite {
 
 		/* Init Facebook API */
 		exportMethods(this);
-		initFacebookAPI();
+		//initFacebookAPI();
 
 		// use facebooks xfbml to produce login button (could be done using
 		// FB.api only)

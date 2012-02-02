@@ -25,8 +25,18 @@ public class ResultsActivityMenu {
 	static private VerticalPanel menuPanel;
 
 	static private Label btnMenu;
-	
+
 	static private PopupPanel activityMenuPopUpPanel;
+
+	static private ChangeHandler listBoxDayChangeHdlr;
+
+	static private ListBox listBoxDayList;
+
+	static private HorizontalPanel addToItineraryPanel;
+
+	static private Label lblAddToIti;
+	
+	static private ItineraryPage itineraryPage;
 
 	public static ResultsActivityMenu getPage() {
 		if (page == null) {
@@ -39,7 +49,7 @@ public class ResultsActivityMenu {
 		menuPanel = new VerticalPanel();
 		activityMenuPopUpPanel = new PopupPanel(true, true);
 		activityMenuPopUpPanel.setStyleName("popUpPanel");
-		
+
 		menuPanel.setWidth("250px");
 		menuPanel.setSpacing(4);
 
@@ -51,26 +61,29 @@ public class ResultsActivityMenu {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				Ruvego.insertItem(ResultsDataGridView.htmlName.getText() + "<;>" + ResultsDataGridView.htmlAddress.getText() + "<;>" + ResultsDataGridView.rating);
 				menuHide();
+				String preparedText = prepareEntryForInsert(ResultsDataGridView.htmlName.getText(), ResultsDataGridView.htmlAddress.getText());
+				Ruvego.insertItem(preparedText);
 			}
 		});
 
-		HorizontalPanel addToItineraryPanel = new HorizontalPanel();
-		Label addToIti = new Label("Add to " + Ruvego.lblItineraryNameText.getText() + " : ");
-		addToIti.setStyleName("menuItemTextNormal");
-		
-		final ListBox listBoxDayList = new ListBox();
-		
-		addToItineraryPanel.add(addToIti);
+		addToItineraryPanel = new HorizontalPanel();
+
+		lblAddToIti = new Label();
+		lblAddToIti.setStyleName("menuItemTextNormal");
+		setupAddToItineraryText(Ruvego.lblItineraryNameText.getText());
+
+		listBoxDayList = new ListBox();
+
+		addToItineraryPanel.add(lblAddToIti);
 		addToItineraryPanel.add(listBoxDayList);
 		addToItineraryPanel.setSpacing(5);
-		
-		
+
+
 		Label lblPlanEvent = new Label("Plan an Event");
 		lblPlanEvent.setStyleName("menuItemText");
 		lblPlanEvent.setWidth("100%");
-		
+
 		btnMenu = new Label("More");
 		btnMenu.setStyleName("activityBtnMore");
 		ResultsDataGridView.resultsBriefPanel.add(btnMenu, 12, ResultsDataGridView.resultsBriefPanel.getOffsetHeight() - 
@@ -78,25 +91,22 @@ public class ResultsActivityMenu {
 
 		menuPanel.add(lblAddToBox);
 		menuPanel.add(lblPlanEvent);
-		if (Ruvego.itineraryState.isItineraryActive()) {
-			listBoxDayList.addItem("Choose");
-			for (int i = 1; i <= Ruvego.itineraryState.getNumDays(); i++) {
-				listBoxDayList.addItem("Day " + i);
-			}
-			menuPanel.insert(addToItineraryPanel, 0);
-		}
-		
-		listBoxDayList.addChangeHandler(new ChangeHandler() {
-			
+
+
+		listBoxDayChangeHdlr = new ChangeHandler() {
+
 			@Override
 			public void onChange(ChangeEvent event) {
 				menuHide();
-				//TODO add to appropriate place in the itinerary
+				ItineraryPage.itineraryPlan[0].addEntry(ResultsDataGridView.htmlName.getText(), ResultsDataGridView.htmlAddress.getText());
+				//TODO write to backend and also put it in the list
 			}
-		});
-		
+		};
+
+		listBoxDayList.addChangeHandler(listBoxDayChangeHdlr);
+
 		menuPanel.setStyleName("menuPanel");
-		
+
 		activityMenuPopUpPanel.add(menuPanel);
 		RootPanel.get().add(activityMenuPopUpPanel);
 
@@ -111,20 +121,26 @@ public class ResultsActivityMenu {
 				}
 			}
 		});
-		
+
 		activityMenuPopUpPanel.addCloseHandler(new CloseHandler<PopupPanel>() {
-			
+
 			@Override
 			public void onClose(CloseEvent<PopupPanel> event) {
 				menuHide();
 			}
 		});
-		
+
 		activityMenuPopUpPanel.addAutoHidePartner(btnMenu.getElement());
 
-
 		menuHide();
-	
+	}
+
+	protected String prepareEntryForInsert(String name, String address) {
+		return (name + "<;>" + address);
+	}
+
+	private void setupAddToItineraryText(String text) {
+		lblAddToIti.setText("Add to " + text + " : ");
 	}
 
 	public void panelResizeAlignments() {
@@ -138,6 +154,7 @@ public class ResultsActivityMenu {
 		btnMenu.setStyleName("activityBtnMoreClick");
 		RootPanel.get().setWidgetPosition(activityMenuPopUpPanel, btnMenu.getAbsoluteLeft(), 
 				btnMenu.getAbsoluteTop() - activityMenuPopUpPanel.getOffsetHeight());
+		listBoxDayList.setSelectedIndex(0);
 	}
 
 
@@ -146,7 +163,23 @@ public class ResultsActivityMenu {
 		btnMenu.setStyleName("activityBtnMore");	
 	}
 
+	protected void onItineraryActive() {
+		setupAddToItineraryText(Ruvego.lblItineraryNameText.getText());
+		listBoxDayList.clear();
+		listBoxDayList.addItem("Choose");
+		for (int i = 1; i <= Ruvego.itineraryState.getNumDays(); i++) {
+			listBoxDayList.addItem("Day " + i);
+		}
+		menuPanel.insert(addToItineraryPanel, 0);
+	}
 
+	protected void onItineraryInactive() {
+		listBoxDayList.addItem("Choose");
+		for (int i = 1; i <= Ruvego.itineraryState.getNumDays(); i++) {
+			listBoxDayList.addItem("Day " + i);
+		}
+		menuPanel.remove(addToItineraryPanel);
+	}
 
 
 }

@@ -92,8 +92,10 @@ public class DayActivityPlan {
 		private Button btnClear = new Button("Clear");
 
 		public void reSize() {
-			boxResultPanel.setHeight((routeInfo.getAbsoluteTop() - boxResultPanel.getAbsoluteTop()
-					+ routeInfo.getOffsetHeight() + 5) + "px");
+			if (routeInfo.isVisible()) {
+				boxResultPanel.setHeight((routeInfo.getAbsoluteTop() - boxResultPanel.getAbsoluteTop()
+						+ routeInfo.getOffsetHeight() + 5) + "px");
+			}
 		}
 
 		public void setPosition() {
@@ -112,7 +114,7 @@ public class DayActivityPlan {
 	/* Non-Static variables */
 	protected Grid grid;
 
-	private Waypoint[] waypointWithout;
+	private Waypoint waypoint;
 
 	private LinkedList<Waypoint> waypointLL;
 
@@ -140,12 +142,10 @@ public class DayActivityPlan {
 		private ItineraryEntryMenu itineraryEntryMenu;
 
 		public void reSize() {
-			boxResultPanel.setHeight((routeInfo.getAbsoluteTop() - boxResultPanel.getAbsoluteTop()
-					+ routeInfo.getOffsetHeight() + 5) + "px");
-		}
-
-		public void setPosition(int i, int start) {
-			lblPosition.setText(String.valueOf((char)(i + 1 + start)));
+			if (routeInfo.isVisible()) {
+				boxResultPanel.setHeight((routeInfo.getAbsoluteTop() - boxResultPanel.getAbsoluteTop()
+						+ routeInfo.getOffsetHeight() + 5) + "px");
+			}
 		}
 	}
 
@@ -156,8 +156,6 @@ public class DayActivityPlan {
 	}
 
 	class AddressOracle extends SuggestOracle {
-
-		// this instance is needed, to call the getLocations-Service
 		private final Geocoder geocoder;
 
 
@@ -168,21 +166,16 @@ public class DayActivityPlan {
 		@Override
 		public void requestSuggestions(final Request request,
 				final Callback callback) {
-			// this is the string, the user has typed so far
 			String addressQuery = request.getQuery();
-			// look up for suggestions, only if at least 2 letters have been typed
 			if (addressQuery.length() > 3) {    
 				geocoder.getLocations(addressQuery, new LocationCallback() {
 
 					@Override
 					public void onFailure(int statusCode) {
-						// do nothing
 					}
 
 					@Override
 					public void onSuccess(JsArray<Placemark> places) {
-						// create an oracle response from the places, found by the
-						// getLocations-Service
 						Collection<Suggestion> result = new LinkedList<Suggestion>();
 						for (int i = 0; i < places.length(); i++) {
 							String address = places.get(i).getAddress();
@@ -197,13 +190,7 @@ public class DayActivityPlan {
 				});
 
 			} else {
-				//	        	
-				//	            Response response = new Response(
-				//	                    Collections.<Suggestion> emptyList());
-				//	          
-				//	            callback.onSuggestionsReady(request, response);
 			}
-
 		}
 	}
 
@@ -236,7 +223,6 @@ public class DayActivityPlan {
 	}
 
 	public DayActivityPlan() {
-
 		itineraryCommon = ItineraryCommon.getPage();
 	}
 
@@ -292,106 +278,122 @@ public class DayActivityPlan {
 				} 
 			};
 		}
-
 	}
 
 	protected void setRouteInfo(String dist, String duration, int count) {
-		System.out.println("Setting route info for : " + count);
 		if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
 			boxResultLL.get(count).routeInfo.setVisible(true);
 			boxResultLL.get(count).routeInfo.setHTML((char)(count + 'A') + " to " + (char)(count + 'A' + 1) + " : " + 
 					dist + " (" + duration + ")");
+			boxResultLL.get(count).routeInfo.setWidth("100%");
 			boxResultLL.get(count).reSize();
 		} else {
-			boxResultLL.get(count + 1).routeInfo.setVisible(true);
-			boxResultLL.get(count + 1).routeInfo.setHTML((char)(count + 'A') + " to " + (char)(count +'A' + 1) + " : " + 
-					dist + " (" + duration + ")");
-			boxResultLL.get(count + 1).reSize();
-			boxResultLL.get(0).routeInfo.setVisible(false);
+			if (TOTAL_COUNT_IN_PLAN == (count + 1)) {
+				dstBox.routeInfo.setVisible(true);
+				dstBox.routeInfo.setHTML((char)(count + 'A') + " to " + (char)(count + 'A' + 1) + " : " + 
+						dist + " (" + duration + ")");
+				dstBox.reSize();
+				dstBox.routeInfo.setWidth("100%");
+			} else {
+				boxResultLL.get(count + 1).routeInfo.setVisible(true);
+				boxResultLL.get(count + 1).routeInfo.setHTML((char)(count + 'A') + " to " + (char)(count + 'A' + 1) + " : " + 
+						dist + " (" + duration + ")");
+				boxResultLL.get(count + 1).reSize();
+				boxResultLL.get(count + 1).routeInfo.setWidth("100%");
+			}
+			boxResultLL.get(0).routeInfo.setVisible(false);		
 		}
 	}
 
-	public void addResults(String[] entry, int count) {
-		TOTAL_COUNT_IN_PLAN = count;
+	public void addResults(String[] nameList, String[] addressList, int count) {
 		/* Clear the grid before forming the list */
 
-		waypointWithout = new Waypoint[count];
-		//boxResult = new BoxResult[count];
-
-
 		for (int i = 0; i < count; i++) {
-			String fieldsDelims = "<;>";
-			String[] fields;
-
 			System.out.println("In loop of : " + i + " Total count : " + count);
-			fields = entry[i].split(fieldsDelims);
 
-			boxResult = new BoxResult();
+			addEntry(nameList[i], addressList[i]);
 
-			boxResult.boxResultPanel.setSize("100%", 100 + "px");
+		}
 
-			/* add i+1 th element */
-			addToGrid(boxResult.boxResultPanel, i + SRC_PANEL + DAY_INFO_PRESENT);
+		/* Increment the total count */
+		TOTAL_COUNT_IN_PLAN += count;
+	}
 
-			if (i % 2 == 0) {
-				boxResult.boxResultPanel.setStyleName("boxResultPanelEven");
+	public void addEntry(String name, String address) {
+		boxResult = new BoxResult();
+
+		boxResult.boxResultPanel.setSize("100%", 100 + "px");
+
+		/* add i+1 th element */
+		addToGrid(boxResult.boxResultPanel);//, i + SRC_PANEL + DAY_INFO_PRESENT + TOTAL_COUNT_IN_PLAN);
+
+
+		boxResult.img = new Image("Images/boxPosition.png");
+		boxResult.img.setPixelSize(35, 25);
+		boxResult.boxResultPanel.add(boxResult.img, BOX_RESULTS_INDENT, 5);
+
+		boxResult.lblPosition = new Label();
+		/* -1 at the end accounts for the entry already added to grid in this iteration */
+		boxResult.lblPosition.setText(String.valueOf((char)(grid.getRowCount() + 'A' - SRC_PANEL - DAY_INFO_PRESENT - 1)));
+		boxResult.lblPosition.setStyleName("whiteText");
+		boxResult.lblPosition.setWidth("34px");
+		boxResult.boxResultPanel.add(boxResult.lblPosition, BOX_RESULTS_INDENT, 8);
+
+		boxResult.name = new HTML(name);
+		boxResult.name.setStyleName("greyText");
+		boxResult.boxResultPanel.add(boxResult.name, BOX_RESULTS_INDENT + boxResult.img.getOffsetWidth() + 5, 8);
+
+		boxResult.address = new Label(address, true);
+		waypoint = new Waypoint(boxResult.address.getText());
+		waypointLL.add(waypoint);
+		Ruvego.getGeocode().getLatLng(boxResult.address.getText(), ItineraryCommon.mapsCallback);
+
+		boxResult.address.setStyleName("boxValueAddressText");
+		boxResult.address.setWidth((BOX_PANEL_WIDTH - BOX_RESULTS_INDENT * 2) + "px");
+		boxResult.boxResultPanel.add(boxResult.address, BOX_RESULTS_INDENT, BOX_RESULTS_SPACING + boxResult.img.getOffsetHeight());
+
+		boxResult.itineraryEntryMenu = new ItineraryEntryMenu(boxResult.boxResultPanel, 
+				boxResult.address.getAbsoluteTop() - boxResult.boxResultPanel.getAbsoluteTop() + boxResult.address.getOffsetHeight() + 2,
+				grid.getRowCount() - SRC_PANEL - DAY_INFO_PRESENT - 1, this);
+
+		boxResult.routeInfo = new HTML("");
+		boxResult.routeInfo.setStyleName("routeInfoText");
+		boxResult.boxResultPanel.add(boxResult.routeInfo, 40, boxResult.itineraryEntryMenu.btnMore.getAbsoluteTop() - 
+				boxResult.boxResultPanel.getAbsoluteTop() + boxResult.itineraryEntryMenu.btnMore.getOffsetHeight() + 8);
+
+		boxResult.boxResultPanel.setHeight((boxResult.routeInfo.getAbsoluteTop() - boxResult.boxResultPanel.getAbsoluteTop()
+				+ boxResult.routeInfo.getOffsetHeight() + 2) + "px");
+
+		boxResult.btnDel = new Image("Images/closebutton.png");
+		boxResult.boxResultPanel.add(boxResult.btnDel, boxResult.boxResultPanel.getOffsetWidth() - 27, 5);
+		boxResult.btnDel.setPixelSize(18, 18);
+		boxResult.btnDel.setStyleName("imgLogo");
+		boxResult.btnDel.setLayoutData(grid.getRowCount() - SRC_PANEL - DAY_INFO_PRESENT - 1);
+
+		setResultPanelStyle(boxResult.boxResultPanel, grid.getRowCount());
+
+		boxResult.btnDel.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				Image img = (Image) event.getSource();
+				ItineraryState.setEntry(DayActivityPlan.this, (Integer)img.getLayoutData());
+				//		BoxResult.this.address.setText("fdsad");
+				System.out.println("Clicked delete for : " + (Integer)img.getLayoutData());
+				Ruvego.getMapWidget().clearOverlays();
+				ItineraryCommon.showConfirmPanel();
 			}
+		});
 
-			boxResult.img = new Image("Images/boxPosition.png");
-			boxResult.img.setPixelSize(35, 25);
-			boxResult.boxResultPanel.add(boxResult.img, BOX_RESULTS_INDENT, 5);
+		/* Add everything to Linked List */
+		boxResultLL.add(boxResult);
+	}
 
-			boxResult.lblPosition = new Label();
-			boxResult.lblPosition.setText(String.valueOf((char)(i + 1 + 64)));
-			boxResult.lblPosition.setStyleName("whiteText");
-			boxResult.lblPosition.setWidth("34px");
-			boxResult.boxResultPanel.add(boxResult.lblPosition, BOX_RESULTS_INDENT, 8);
-
-			boxResult.name = new HTML(fields[0]);
-			boxResult.name.setStyleName("greyText");
-			boxResult.boxResultPanel.add(boxResult.name, BOX_RESULTS_INDENT + boxResult.img.getOffsetWidth() + 5, 8);
-
-			boxResult.address = new Label(fields[1], true);
-			waypointWithout[i] = new Waypoint(boxResult.address.getText());
-			Ruvego.getGeocode().getLatLng(boxResult.address.getText(), ItineraryCommon.mapsCallback);
-
-			boxResult.address.setStyleName("boxValueAddressText");
-			boxResult.address.setWidth((BOX_PANEL_WIDTH - BOX_RESULTS_INDENT * 2) + "px");
-			boxResult.boxResultPanel.add(boxResult.address, BOX_RESULTS_INDENT, BOX_RESULTS_SPACING + boxResult.img.getOffsetHeight());
-
-			boxResult.itineraryEntryMenu = new ItineraryEntryMenu(boxResult.boxResultPanel, 
-					boxResult.address.getAbsoluteTop() - boxResult.boxResultPanel.getAbsoluteTop() + boxResult.address.getOffsetHeight() + 2,
-					i, this);
-
-			boxResult.routeInfo = new HTML("");
-			boxResult.routeInfo.setStyleName("routeInfoText");
-			boxResult.boxResultPanel.add(boxResult.routeInfo, 20, boxResult.itineraryEntryMenu.btnMore.getAbsoluteTop() - 
-					boxResult.boxResultPanel.getAbsoluteTop() + boxResult.itineraryEntryMenu.btnMore.getOffsetHeight() + 8);
-			boxResult.boxResultPanel.setHeight((boxResult.routeInfo.getAbsoluteTop() - boxResult.boxResultPanel.getAbsoluteTop()
-					+ boxResult.routeInfo.getOffsetHeight() + 2) + "px");
-
-			boxResult.btnDel = new Image("Images/closebutton.png");
-			boxResult.boxResultPanel.add(boxResult.btnDel, boxResult.boxResultPanel.getOffsetWidth() - 27, 5);
-			boxResult.btnDel.setPixelSize(18, 18);
-			boxResult.btnDel.setStyleName("imgLogo");
-
-			boxResult.btnDel.setLayoutData(i);
-			boxResult.btnDel.addClickHandler(new ClickHandler() {
-
-				@Override
-				public void onClick(ClickEvent event) {
-					Image img = (Image) event.getSource();
-					ItineraryState.setEntry(DayActivityPlan.this, (Integer)img.getLayoutData());
-					//		BoxResult.this.address.setText("fdsad");
-					System.out.println("Clicked delete for : " + (Integer)img.getLayoutData());
-					Ruvego.getMapWidget().clearOverlays();
-					ItineraryCommon.showConfirmPanel();
-				}
-			});
-
-			/* Add everything to Linked List */
-			boxResultLL.add(boxResult);
-			waypointLL.add(waypointWithout[i]);
+	private void setResultPanelStyle(AbsolutePanel resultPanel, int num) {
+		if ((num + DAY_INFO_PRESENT) % 2 == 0) {
+			resultPanel.setStyleName("boxResultPanelEven");
+		} else {
+			resultPanel.setStyleName("boxResultPanelOdd");
 		}
 	}
 
@@ -400,7 +402,7 @@ public class DayActivityPlan {
 		System.out.println("Deleting " + ItineraryState.getEntry().dayName + " Entry " + ItineraryState.getEntryNum());
 
 		freeBoxResult = boxResultLL.remove(ItineraryState.getEntryNum());
-		grid.removeRow(ItineraryState.getEntryNum() + SRC_PANEL);
+		grid.removeRow(ItineraryState.getEntryNum() + SRC_PANEL + DAY_INFO_PRESENT);
 		waypointLL.remove(ItineraryState.getEntryNum());
 		TOTAL_COUNT_IN_PLAN--;
 
@@ -408,9 +410,18 @@ public class DayActivityPlan {
 		freeBoxResult = null;
 
 		for (int i = ItineraryState.getEntryNum(); i < TOTAL_COUNT_IN_PLAN; i++) {
-			boxResultLL.get(i).itineraryEntryMenu.updateEntryPosition(i + SRC_PANEL);
+			System.out.println("Reorganizing : " + i);
+			/* This should be i + 1 */
+			boxResultLL.get(i).itineraryEntryMenu.updateEntryPosition(i + 1);
 			boxResultLL.get(i).btnDel.setLayoutData(i);
+			setResultPanelStyle(boxResultLL.get(i).boxResultPanel, i);
 		}
+		
+		/* If dst panel present, set the style of that panel */
+		if (DST_PANEL == 1) {
+			setResultPanelStyle(dstBox.boxResultPanel, grid.getRowCount());
+		}
+
 		reAssignLabels();
 	}
 
@@ -441,9 +452,9 @@ public class DayActivityPlan {
 		waypointLL.add(newPos, curWaypoint);
 
 
-		grid.removeRow(currentPos + SRC_PANEL);
-		grid.insertRow(newPos + SRC_PANEL);
-		grid.setWidget(newPos + SRC_PANEL, 0, curBoxResult.boxResultPanel);
+		grid.removeRow(currentPos + SRC_PANEL + DAY_INFO_PRESENT);
+		grid.insertRow(newPos + SRC_PANEL + DAY_INFO_PRESENT);
+		grid.setWidget(newPos + SRC_PANEL + DAY_INFO_PRESENT, 0, curBoxResult.boxResultPanel);
 
 		if (currentPos > newPos) {
 			int temp = currentPos;
@@ -452,16 +463,29 @@ public class DayActivityPlan {
 		}
 
 		for (int i = currentPos; i <= newPos; i++) {
-			boxResultLL.get(i).itineraryEntryMenu.updateEntryPosition(i + SRC_PANEL);
+			System.out.println("In loop : " + i);
+			/* This should be i + 1 */
+			boxResultLL.get(i).itineraryEntryMenu.updateEntryPosition(i + 1);
 			boxResultLL.get(i).btnDel.setLayoutData(i);
+			setResultPanelStyle(boxResultLL.get(i).boxResultPanel, i);
 		}
+
+		/* If dst panel present, set the style of that panel */
+		if (DST_PANEL == 1) {
+			setResultPanelStyle(dstBox.boxResultPanel, grid.getRowCount());
+		}
+
 		reAssignLabels();
 	}
 
-	public void addToGrid(Widget boxResultPanel, int position) {
-		System.out.println("Added position : " + position + " Row count : " + grid.getRowCount());
-		grid.resizeRows(grid.getRowCount() + 1);
-		grid.setWidget(position, 0, boxResultPanel);
+	public void addToGrid(Widget boxResultPanel) {
+		int presentEntriesCount = grid.getRowCount();
+
+		System.out.println("Added Itinerary entry to position : " + presentEntriesCount);
+		grid.resizeRows(presentEntriesCount + 1);
+		grid.setWidget(presentEntriesCount, 0, boxResultPanel);
+
+
 	}
 
 	protected void mapRoute() {
@@ -497,7 +521,7 @@ public class DayActivityPlan {
 		if (dstBox == null) {
 			dstBox = new BoxResultSrcDst();
 
-			addToGrid(dstBox.boxResultPanel, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
+			addToGrid(dstBox.boxResultPanel);//, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
 
 			dstBox.name.setHTML("End Point");
 
@@ -519,8 +543,8 @@ public class DayActivityPlan {
 
 
 			dstBox.routeInfo.setStyleName("routeInfoText");
-			dstBox.boxResultPanel.add(dstBox.routeInfo, 20, dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
-					+ dstBox.suggestBoxAddress.getOffsetHeight() + 2);
+			dstBox.boxResultPanel.add(dstBox.routeInfo, 40, dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
+					+ dstBox.suggestBoxAddress.getOffsetHeight() + 5);
 
 			dstBox.btnAdd.setPixelSize(40, 24);
 			dstBox.btnAdd.setStyleName("boxBtnAdd");
@@ -536,7 +560,6 @@ public class DayActivityPlan {
 
 
 			dstBox.routeInfo.setHTML("");
-
 
 			dstBox.btnAdd.addClickHandler(new ClickHandler() {
 
@@ -570,16 +593,14 @@ public class DayActivityPlan {
 					ItineraryCommon.DST_ADDRESS = "";
 					Ruvego.errorDisplayClear();
 					dstBox.lblPosition.setText("");
-					dstBox.routeInfo.setText("");
+					dstBox.routeInfo.setVisible(false);
 					dstBox.reSize();
 					DST_ADDRESS_PRESENT = 0;
 					waypointLL.removeLast();
 				}
 			});
 
-			if (TOTAL_COUNT_IN_PLAN % 2 == 1) {
-				dstBox.boxResultPanel.setStyleName("boxResultPanelEven");
-			}
+			setResultPanelStyle(dstBox.boxResultPanel, grid.getRowCount());
 
 			srcDstSame = new CheckBox("same as start point");
 			srcDstSame.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -598,11 +619,6 @@ public class DayActivityPlan {
 			dstBox.boxResultPanel.add(srcDstSame, dstBox.name.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + dstBox.name.getOffsetWidth() + 5, 
 					dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
 			srcDstSame.setStyleName("srcDstInfoText");
-
-			if (TOTAL_COUNT_IN_PLAN % 2 == 0) {
-				dstBox.boxResultPanel.setStyleName("boxResultPanelEven");
-			}
-
 
 			mapsAddDstCallback = new LatLngCallback() {
 
@@ -632,7 +648,7 @@ public class DayActivityPlan {
 
 
 		} else {
-			addToGrid(dstBox.boxResultPanel, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
+			addToGrid(dstBox.boxResultPanel);//, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
 		}
 
 		DST_PANEL = 1;
@@ -646,7 +662,7 @@ public class DayActivityPlan {
 		if (srcBox == null) {
 			srcBox = new BoxResultSrcDst();
 
-			addToGrid(srcBox.boxResultPanel, DAY_INFO_PRESENT);
+			addToGrid(srcBox.boxResultPanel);//, DAY_INFO_PRESENT);
 
 			srcBox.name.setHTML("Start Point");
 
@@ -746,18 +762,18 @@ public class DayActivityPlan {
 					addWaypoint(true);
 
 					srcBox.lblPosition.setText("A");
-					
+
 					SRC_ADDRESS_PRESENT = 1;
 					waypointSrc = new Waypoint(point);
 					waypointLL.addFirst(waypointSrc);
-					
+
 					reAssignLabels();
 				}
 
 			};
 
 		} else {
-			addToGrid(srcBox.boxResultPanel, DAY_INFO_PRESENT);
+			addToGrid(srcBox.boxResultPanel);//, DAY_INFO_PRESENT);
 		}
 
 		SRC_PANEL = 1;
@@ -767,17 +783,21 @@ public class DayActivityPlan {
 
 	private void reAssignLabels() {
 		Iterator<BoxResult> itr = boxResultLL.iterator();
-		
+
 		int count = 0;
 		if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
 			count = 'B';
 		} else {
 			count = 'A';
 		}
-		
+
 		while (itr.hasNext()) {
 			itr.next().lblPosition.setText(String.valueOf((char)(count)));
 			count++;
+		}
+
+		if (DST_ADDRESS_PRESENT == 1) {
+			dstBox.lblPosition.setText(String.valueOf((char)(count)));
 		}
 	}
 
@@ -785,7 +805,7 @@ public class DayActivityPlan {
 		Label lblDayOneInfo = new Label("Day " + day + "  [ " + date + " ]");
 		lblDayOneInfo.setStyleName("lblItineraryDayInfo");
 		lblDayOneInfo.setWidth("100%");
-		addToGrid(lblDayOneInfo, 0);
+		addToGrid(lblDayOneInfo);//, 0);
 		DAY_INFO_PRESENT = 1;
 	}
 

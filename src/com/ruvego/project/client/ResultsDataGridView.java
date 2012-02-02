@@ -272,6 +272,7 @@ public class ResultsDataGridView {
 				"the structure links the city of San Francisco, on the northern tip of the San Francisco Peninsula, to Marin County.");
 
 		activityMenu = ResultsActivityMenu.getPage();
+		activityMenu.onItineraryActive();
 	}
 
 
