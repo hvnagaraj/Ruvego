@@ -14,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
+
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.streetview.PhotoSpec;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -43,7 +45,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 
 	private Mongo database;
 	private DB db;
-	
+
 	public boolean writeResults(WritePlacePacket writeData) {
 		/* Header query */
 		BasicDBObject query = new BasicDBObject();
@@ -91,7 +93,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		}
 
 		coll.update(getObject, updateObject);
-		
+
 		return true;
 	}
 
@@ -113,7 +115,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		}
 
 		coll.save(dataObject);
-		
+
 		return true;
 	}
 
@@ -238,7 +240,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		dataObject.append("imagepath", "icons/" + writeData.getImagePath());
 		dataObject.append("timeoftheday", writeData.getcheckBoxValue());
 		dataObject.append("contact", writeData.getContact());
-		
+
 		if (writeData.getSubCategory() != null) {
 			dataObject.append("subcategory", writeData.getSubCategory());
 		}
@@ -274,7 +276,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		}
 
 		dataObject.append("next", "");
-		
+
 		/* Get all the places within the 150 miles range */
 		String[] placeList;
 		placeList = getPlaceWithinBounds(writeData);
@@ -289,7 +291,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 			source = source.replaceAll(" ", "+");
 			source = source.replaceAll("\n", "");
 			System.out.println(source);
-			
+
 			destinations = StringUtils.join(placeList, "|");
 			destinations = destinations.replaceAll(" ", "+");
 			System.out.println(destinations);
@@ -341,16 +343,16 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 					delims = "\",";
 					contentTokens = tokens[1].split(delims);
 					distContent = contentTokens[0];
-					
+
 					distDBObject.append(placeList[distCount], distContent);
-					
+
 					dataObject.append("distance", distDBObject);
 
 					System.out.println("Distance for place - " + placeList[distCount] + " : " + dist[distCount]);
 					System.out.println("Distance in string : " + contentTokens[0]);
-					
+
 					dataObject.append(placeList[distCount], ((dist[distCount] / 25) + 1) * 25);
-					
+
 					int timeOfTheDayValue = getTimeOfTheDay(writeData);
 					timeOfTheDayValue = timeOfTheDayValue | writeData.getcheckBoxValue();
 
@@ -376,14 +378,14 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 					tokens = tokens[1].split(delims);
 
 					durDBObject.append(placeList[durCount], tokens[0]);
-					
+
 					dataObject.append("duration", durDBObject);
-					
+
 					System.out.println("Duration : " + tokens[0]);
-					
+
 					durCount++;
 				}
-				
+
 				assert(distCount == durCount);
 
 				if (inputLine.contains("status")) {
@@ -397,7 +399,7 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 					System.out.println("Status : " + tokens[1]);
 
 				}
-				
+
 			}
 			in.close();
 
@@ -484,11 +486,11 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		queryPlace.put("lon", new BasicDBObject().append("$lte", writeData.getLonE()));
 		queryPlace.put("lon", new BasicDBObject().append("$gte", writeData.getLonW()));
 		queryPlace.put("lat", new BasicDBObject().append("$lte", writeData.getLatN()));
-		
+
 		if (writeData.getLatS() > 0) {
 			queryPlace.put("lat", new BasicDBObject().append("$gte", writeData.getLatS()));
 		}
-		
+
 		System.out.println(writeData.getLonE() + "   " + writeData.getLonW() + "   " + writeData.getLatN() + "   " + writeData.getLatS());
 
 		DBCursor placeContent = coll.find(queryPlace);
@@ -506,26 +508,42 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 
 	@Override
 	public boolean writeCreateItinerary(CreateItineraryPacket createItineraryPacket) {
-		return true;
-		/*
 		BasicDBObject query = new BasicDBObject();
-		query.put("itineraryname", createItineraryPacket.getItineraryName());
-		
-		if (connectDBAndCheckForEntry(createItineraryPacket.getUsername(), query) == false) {
+		query.put("name", createItineraryPacket.getItineraryName());
+		query.append("creator", createItineraryPacket.getUsername());
+
+		if (connectDBAndCheckForEntry("Itinerary", query) == false) {
 			return false;
 		}
-		
+
 		BasicDBObject dataObject = new BasicDBObject();
 
-		dataObject.append("itineraryname", createItineraryPacket.getItineraryName());
+		dataObject.append("name", createItineraryPacket.getItineraryName());
 		dataObject.append("numdays", createItineraryPacket.getNumDays());
 		dataObject.append("startdate", createItineraryPacket.getStartDate());
-		dataObject.append("enddate", createItineraryPacket.getEndDate());
-		
-		connectDBAndSave(createItineraryPacket.getUsername(), dataObject);
+		dataObject.append("creator", createItineraryPacket.getUsername());
+
+		connectDBAndSave("Itinerary", dataObject);
+		System.out.println("creator : " + createItineraryPacket.getUsername());
+		connectDBAndUpdate("Itinerary", new BasicDBObject().append("name", createItineraryPacket.getItineraryName()), 
+				new BasicDBObject().append("$addToSet", new BasicDBObject().append("users", createItineraryPacket.getUsername())));
 
 		return true;
-		*/
+	}
+
+	@Override
+	public boolean addEntry(String itineraryName, String day, String objectId, String username) {
+		/*		
+		db.command("db.Itinerary.update( { name : " + itineraryName + ", " + day + ": { $nin : " + objectId + " } }, " +
+				"{ votes : { $inc : 1 }, voters : { $push : \"calvin\" } );");
+
+		 */
+		BasicDBObject update = new BasicDBObject().append(day, new ObjectId(objectId));
+
+		/* Update Category and SubCategory */
+		connectDBAndUpdate("Itinerary", new BasicDBObject().append("name", itineraryName), new BasicDBObject().append("$addToSet", update));
+
+		return true;
 	}
 
 }

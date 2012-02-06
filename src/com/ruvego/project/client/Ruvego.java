@@ -150,16 +150,24 @@ public class Ruvego implements EntryPoint {
 
 	static protected Label lblItineraryNameText;
 
-	static private Timer timer;
-	
+	static private Timer timerBoxInfo;
+
+	static private Timer timerErrorDisplay;
+
 	private static DayActivityPlan dayActivityPlan;
-	
+
 	protected static InfoWindowContent infoWindow;
 
 	protected static Label lblInfoWindow;
 
 	public static void setItineraryText(String text) {
 		lblItineraryNameText.setText(text);
+		itineraryNamePanel.setVisible(true);
+		itineraryNamePanelAlignments();
+	}
+	
+	public static void clearItineraryText() {
+		itineraryNamePanel.setVisible(false);
 	}
 
 	public static ResultsWriteAsync getResultsWriteService() {
@@ -174,6 +182,13 @@ public class Ruvego implements EntryPoint {
 		noContent.setHTML(msg);
 		noContent.setVisible(true);
 		errorDisplayAlignments();
+	}
+
+	public static void errorDisplayWithTimer(String msg) {
+		noContent.setHTML(msg);
+		noContent.setVisible(true);
+		errorDisplayAlignments();
+		timerErrorDisplay.schedule(2000);
 	}
 
 	public static void errorDisplayClear() {
@@ -241,7 +256,7 @@ public class Ruvego implements EntryPoint {
 	private static void boxInfo(String string) {		
 		lblBoxInfo.setText(string);
 		lblBoxInfo.setVisible(true);
-		timer.schedule(2500);
+		timerBoxInfo.schedule(2500);
 	}
 
 	public static void boxInfoClear() {
@@ -401,7 +416,7 @@ public class Ruvego implements EntryPoint {
 		setFooterPanel();
 		setMapsPanel();
 		setupItineraryState();
-		
+
 
 		/* Google Maps 
 		 * Should be initialized prio to using geocoding 
@@ -411,7 +426,7 @@ public class Ruvego implements EntryPoint {
 				LatLng city = LatLng.newInstance(37.68889, -100.478611);
 				map = new MapWidget(city, 4);
 				map.zoomIn();
-				
+
 				setupInfoWindow();
 				zoomPosRight = new ControlPosition(ControlAnchor.TOP_RIGHT, 10, 10);
 				zoomPosLeft = new ControlPosition(ControlAnchor.TOP_LEFT, 10, 10);
@@ -431,7 +446,7 @@ public class Ruvego implements EntryPoint {
 				setupNoContent();
 				setupFacebookModule();
 				setupDayActvityPlan();
-				
+
 				/* This should be the last func to be called */
 				managePageHistory();
 
@@ -446,11 +461,21 @@ public class Ruvego implements EntryPoint {
 			}
 		});
 
-		timer = new Timer() {
+		timerBoxInfo = new Timer() {
 			public void run() {
 				boxInfoClear();
 			}
 		};
+
+		timerErrorDisplay = new Timer() {
+			public void run() {
+				errorDisplayClear();
+				History.newItem("homePage");
+			}
+		};
+
+
+
 	}
 
 	protected void setupInfoWindow() {
@@ -489,6 +514,9 @@ public class Ruvego implements EntryPoint {
 		} else if (History.getToken().equalsIgnoreCase("boxView")) {
 			formBoxView();
 			History.newItem("boxView");
+		} else if (History.getToken().contains("itineraryPage")) {
+			formItineraryPage();
+			History.newItem(History.getToken());
 		} else {
 			System.err.println("Error: Invalid token in the URL. Going to default page");
 			formHomePage();
@@ -525,13 +553,13 @@ public class Ruvego implements EntryPoint {
 	}
 
 	protected void formItineraryPage() {
-		clearOtherPages("boxView");
+		clearOtherPages("itineraryPage");
 		if (itineraryPage == null) {
 			itineraryPage = ItineraryPage.getPage();
 		} else {
 			itineraryPage.panelsView();
 		}
-		itineraryPage.fetchResults(Window.Location.getParameter("id"));
+		itineraryPage.fetchResults();
 	}
 
 	private void setPlaces() {
@@ -639,13 +667,12 @@ public class Ruvego implements EntryPoint {
 
 		lblItineraryNameText = new Label("Los Angeles Trip");
 		lblItineraryNameText.setStyleName("itineraryActive");
-		
+
 		lblItineraryNameText.addClickHandler(new ClickHandler() {
-			
+
 			@Override
 			public void onClick(ClickEvent event) {
-				ItineraryPage itineraryPage = ItineraryPage.getPage();
-				itineraryPage.panelsView();
+				History.newItem("itineraryPage/" + Ruvego.lblItineraryNameText.getText());
 			}
 		});
 
@@ -655,6 +682,8 @@ public class Ruvego implements EntryPoint {
 		secondHeaderPanel.add(itineraryNamePanel);
 
 		itineraryNamePanelAlignments();
+		
+		itineraryNamePanel.setVisible(false);
 	}
 
 
@@ -705,6 +734,10 @@ public class Ruvego implements EntryPoint {
 
 		if (!currentPage.equalsIgnoreCase("boxView") && boxView != null) {
 			boxView.clearContent();
+		}
+
+		if (!currentPage.equalsIgnoreCase("itineraryPage") && itineraryPage != null) {
+			itineraryPage.clearContent();
 		}
 	}
 
@@ -943,6 +976,17 @@ public class Ruvego implements EntryPoint {
 	public static void setMinimumPageHeight(int height) {
 		MIN_PAGE_HEIGHT = height;
 	}
+
+	public static String[] parseString(String input, String delims) {
+		return(input.split(delims));
+	}
+
+	public static void userLoggedOut() {
+		clearItineraryText();
+		
+		Cookies.removeCookie("itinerary", "/");
+	}
+
 
 
 }

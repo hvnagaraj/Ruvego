@@ -31,16 +31,10 @@ public class ItineraryCommon {
 	
 	private static HTML lblTotalDuration;
 	
-	protected static String SRC_ADDRESS = "";
-	
-	protected static String DST_ADDRESS = "";
-	
-	protected static LatLng srcPoint;
-	protected static LatLng dstPoint;
 
 	protected static LatLngCallback mapsCallback;
 	
-	protected static LatLngBounds bounds = LatLngBounds.newInstance();
+	protected static LatLngBounds bounds;
 
 	
 	public static ItineraryCommon getPage() {
@@ -57,6 +51,7 @@ public class ItineraryCommon {
 		confirmPanel.setGlassEnabled(true);
 		confirmPanel.setGlassStyleName("popUpPanel");
 
+		bounds = LatLngBounds.newInstance();
 		
 		FlexTable confirmContentPanel = new FlexTable();
 		confirmContentPanel.setPixelSize(150, 70);

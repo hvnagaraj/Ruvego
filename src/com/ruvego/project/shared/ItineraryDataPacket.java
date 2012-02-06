@@ -9,6 +9,7 @@ public class ItineraryDataPacket implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -8690749567025950823L;
+	private int returnVal;
 	private int numDays;
 	private String startDate;
 	
@@ -16,11 +17,16 @@ public class ItineraryDataPacket implements Serializable {
 	
 	public ItineraryDataPacket() {
 	}
+	
+	public ItineraryDataPacket(int returnVal) {
+		this.returnVal = returnVal;
+	}
 
-	public ItineraryDataPacket(int numDays, String startDate) {
+	public ItineraryDataPacket(int numDays, String startDate, int returnVal) {
 		this.dayData = new DayDataPacket[numDays];
 		this.numDays = numDays;
 		this.startDate = startDate;
+		this.returnVal = returnVal;
 	}
 	
 	public void setData(int day, int numEntries, String[] name, String[] address) {
@@ -50,5 +56,7 @@ public class ItineraryDataPacket implements Serializable {
 		return this.numDays;
 	}
 
-
+	public int getReturnVal() {
+		return this.returnVal;
+	}
 }

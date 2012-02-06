@@ -134,6 +134,7 @@ public class ObjectSortableDataGrid<T> extends SortableDataGrid<T> {
 			public void onSuccess(final ResultsBriefPanelPacket result) {
 				ResultsActivityMenu.menuHide();
 				ResultsDataGridView.setHtmlName(result.getName(), result.getWebsite());
+				ResultsDataGridView.htmlName.setLayoutData(result.getObjectId());
 				ResultsDataGridView.htmlAddress.setHTML(result.getaddress());
 				ResultsDataGridView.htmlBrief.setText(result.getBrief());
 				ResultsDataGridView.setTimings(result.getTimings());

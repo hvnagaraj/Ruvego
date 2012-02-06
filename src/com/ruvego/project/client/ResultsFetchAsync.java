@@ -33,6 +33,6 @@ public interface ResultsFetchAsync {
 	void authenticateUser(String username, String password, AsyncCallback<Boolean> callbackAuthenticate);
 
 	void fetchItineraryData(String itineraryName,
-			AsyncCallback<ItineraryDataPacket> callbackItineraryResults);
+			String string, AsyncCallback<ItineraryDataPacket> callbackItineraryResults);
 
 }

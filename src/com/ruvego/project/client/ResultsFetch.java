@@ -31,6 +31,6 @@ public interface ResultsFetch extends RemoteService {
 
 	boolean authenticateUser(String username, String password);
 
-	ItineraryDataPacket fetchItineraryData(String itineraryName);
+	ItineraryDataPacket fetchItineraryData(String itineraryName, String string);
 }
 

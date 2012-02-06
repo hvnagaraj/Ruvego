@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -20,7 +21,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class ResultsActivityMenu {
-	static private ResultsActivityMenu page;
+	private static ResultsActivityMenu page;
 
 	static private VerticalPanel menuPanel;
 
@@ -35,12 +36,15 @@ public class ResultsActivityMenu {
 	static private HorizontalPanel addToItineraryPanel;
 
 	static private Label lblAddToIti;
-	
+
 	static private ItineraryPage itineraryPage;
+
+	static private AsyncCallback<Boolean> callbackAddEntry;
 
 	public static ResultsActivityMenu getPage() {
 		if (page == null) {
 			page = new ResultsActivityMenu();
+			assert(page != null);
 		}
 		return page;
 	}
@@ -98,8 +102,10 @@ public class ResultsActivityMenu {
 			@Override
 			public void onChange(ChangeEvent event) {
 				menuHide();
-				ItineraryPage.itineraryPlan[0].addEntry(ResultsDataGridView.htmlName.getText(), ResultsDataGridView.htmlAddress.getText());
-				//TODO write to backend and also put it in the list
+
+				Ruvego.getResultsWriteService().addEntry(ItineraryState.ITINERARY_NAME, listBoxDayList.getItemText(listBoxDayList.getSelectedIndex()),
+						(String)ResultsDataGridView.htmlName.getLayoutData(), 
+						LoginModule.getUsername(), callbackAddEntry);
 			}
 		};
 
@@ -130,16 +136,42 @@ public class ResultsActivityMenu {
 			}
 		});
 
+		callbackAddEntry = new AsyncCallback<Boolean>() {
+
+			@Override
+			public void onSuccess(Boolean result) {
+				// TODO Auto-generated method stub
+				System.out.println("Successfully added");
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+
+			}
+		};
+
 		activityMenuPopUpPanel.addAutoHidePartner(btnMenu.getElement());
+		itineraryActive();
+		panelalignments();
 
 		menuHide();
+	}
+
+	private void itineraryActive() {
+		System.out.println("itinejhgjhgj state : " + ItineraryState.isItineraryActive());
+		if (ItineraryState.isItineraryActive() == false) {
+//	/		return;
+		}
+		System.out.println("heretreu");
+		onItineraryActive();
 	}
 
 	protected String prepareEntryForInsert(String name, String address) {
 		return (name + "<;>" + address);
 	}
 
-	private void setupAddToItineraryText(String text) {
+	private static void setupAddToItineraryText(String text) { 
 		lblAddToIti.setText("Add to " + text + " : ");
 	}
 
@@ -152,9 +184,8 @@ public class ResultsActivityMenu {
 		activityMenuPopUpPanel.setVisible(true);
 		activityMenuPopUpPanel.show();
 		btnMenu.setStyleName("activityBtnMoreClick");
-		RootPanel.get().setWidgetPosition(activityMenuPopUpPanel, btnMenu.getAbsoluteLeft(), 
-				btnMenu.getAbsoluteTop() - activityMenuPopUpPanel.getOffsetHeight());
 		listBoxDayList.setSelectedIndex(0);
+		panelalignments();
 	}
 
 
@@ -163,23 +194,34 @@ public class ResultsActivityMenu {
 		btnMenu.setStyleName("activityBtnMore");	
 	}
 
-	protected void onItineraryActive() {
-		setupAddToItineraryText(Ruvego.lblItineraryNameText.getText());
+	protected static void onItineraryActive() {
+		if (ResultsActivityMenu.page == null) {
+			return;
+		}
+		System.out.println("adding add to itinerary in the menu");
+		setupAddToItineraryText(ItineraryState.ITINERARY_NAME);
 		listBoxDayList.clear();
 		listBoxDayList.addItem("Choose");
-		for (int i = 1; i <= Ruvego.itineraryState.getNumDays(); i++) {
+		for (int i = 1; i <= ItineraryState.getNumDays(); i++) {
 			listBoxDayList.addItem("Day " + i);
 		}
 		menuPanel.insert(addToItineraryPanel, 0);
 	}
 
-	protected void onItineraryInactive() {
-		listBoxDayList.addItem("Choose");
-		for (int i = 1; i <= Ruvego.itineraryState.getNumDays(); i++) {
-			listBoxDayList.addItem("Day " + i);
-		}
+	protected static void onItineraryInactive() {
 		menuPanel.remove(addToItineraryPanel);
 	}
 
+	protected static void userLoggedOut() {
+		if (page == null) {
+			return;
+		}
+		onItineraryInactive();
+	}
+
+	protected void panelalignments() {
+		RootPanel.get().setWidgetPosition(activityMenuPopUpPanel, btnMenu.getAbsoluteLeft(), 
+				btnMenu.getAbsoluteTop() - activityMenuPopUpPanel.getOffsetHeight());
+	}
 
 }

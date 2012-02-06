@@ -38,6 +38,7 @@ public class RuvegoHomePage {
 	public static RuvegoHomePage getPage() {
 		if (page == null) {
 			page = new RuvegoHomePage();
+			assert(page != null);
 		}
 		return page;
 	}

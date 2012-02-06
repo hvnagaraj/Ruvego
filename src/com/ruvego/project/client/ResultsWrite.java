@@ -13,4 +13,7 @@ public interface ResultsWrite extends RemoteService {
 	boolean writeResults(WriteActivityPacket writeData);
 
 	boolean writeCreateItinerary(CreateItineraryPacket createItineraryPacket);
+
+	boolean addEntry(String itineraryName, String day, String objectId,
+			String username);
 }

@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -81,10 +82,12 @@ public class LoginModule {
 		String cookieValue = Cookies.getCookie("username");
 		if (cookieValue != null) {
 			lblLogin = new Label(cookieValue, false);
+			USERNAME = lblLogin.getText();
 			USER_AUTHENTICATED = true;
 		} else {
 			lblLogin = new Label("Sign-In", false);
 		}
+
 		lblLogin.setStyleName("loginText");
 		loginPanel.add(lblLogin);
 
@@ -184,6 +187,8 @@ public class LoginModule {
 					loginPanelAlignments();
 					hideLogin();
 					Cookies.setCookie("username", USERNAME, expires, null, "/", false);
+
+					userLoggedIn();
 				} else {
 					Window.alert("Invalid Username or Password. Access Denied");
 				}
@@ -212,6 +217,8 @@ public class LoginModule {
 				lblLogin.setText("Sign-In");
 				hideLogout();
 				USER_AUTHENTICATED = false;
+
+				userLoggedOut();
 			}
 		});
 
@@ -244,6 +251,17 @@ public class LoginModule {
 		hideLogin();
 		hideLogout();
 
+	}
+
+	protected void userLoggedIn() {
+
+	}
+
+	protected void userLoggedOut() {
+		// TODO Auto-generated method stub
+		Ruvego.userLoggedOut();
+		ResultsActivityMenu.userLoggedOut();
+		History.newItem("homePage");
 	}
 
 	protected void showLogout() {
@@ -309,7 +327,7 @@ public class LoginModule {
 		loginDetails.setWidth((lblOrSignIn.getAbsoluteLeft() - loginDetails.getAbsoluteLeft() + lblOrSignIn.getOffsetWidth() + LEFT_DETAILS_INDENT) + "px");
 		loginDetails.setHeight((btnSignIn.getAbsoluteTop() - loginDetails.getAbsoluteTop() + btnSignIn.getOffsetHeight() + 20) + "px");
 
-		if (loginPopUpPanel.isVisible()) {
+		if (loginPopUpPanel.isVisible() == true) {
 			RootPanel.get().setWidgetPosition(loginPopUpPanel, LOGIN_PANEL_LEFT - (loginPopUpPanel.getOffsetWidth() - loginWrapper.getOffsetWidth()), 
 					loginWrapper.getAbsoluteTop() + loginWrapper.getOffsetHeight());
 		}
@@ -325,8 +343,10 @@ public class LoginModule {
 		logoutDetails.setWidth((btnLogOut.getAbsoluteLeft() - logoutDetails.getAbsoluteLeft() + btnLogOut.getOffsetWidth() + LEFT_DETAILS_INDENT) + "px");
 		logoutDetails.setHeight((btnLogOut.getAbsoluteTop() - logoutDetails.getAbsoluteTop() + btnLogOut.getOffsetHeight() + 20) + "px");
 
-		RootPanel.get().setWidgetPosition(logoutPopUpPanel, LOGIN_PANEL_LEFT - (logoutPopUpPanel.getOffsetWidth() - loginWrapper.getOffsetWidth()), 
-				loginWrapper.getAbsoluteTop() + loginWrapper.getOffsetHeight());
+		if (logoutPopUpPanel.isVisible() == true) {
+			RootPanel.get().setWidgetPosition(logoutPopUpPanel, LOGIN_PANEL_LEFT - (logoutPopUpPanel.getOffsetWidth() - loginWrapper.getOffsetWidth()), 
+					loginWrapper.getAbsoluteTop() + loginWrapper.getOffsetHeight());
+		}
 
 	}
 
@@ -336,7 +356,7 @@ public class LoginModule {
 			loginPanelAlignments();	
 		}
 
-		if (loginDetails.isVisible()) {
+		if (logoutDetails.isVisible()) {
 			logoutPanelAlignments();
 		}
 	}

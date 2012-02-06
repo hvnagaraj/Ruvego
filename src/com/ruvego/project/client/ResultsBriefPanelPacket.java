@@ -15,13 +15,14 @@ public class ResultsBriefPanelPacket implements Serializable {
 	private String timings;
 	private String contact;
 	private String rating;
+	private String objectId;
 	
 	public ResultsBriefPanelPacket() {
 		
 	}
 	
 	public ResultsBriefPanelPacket(String name, String address, String brief, String website, String rating, String imagePath, String miscInfo, String timings,
-			String contact) {
+			String contact, String objectId) {
 
 		this.name = name;
 		this.brief = brief;
@@ -32,6 +33,7 @@ public class ResultsBriefPanelPacket implements Serializable {
 		this.timings = timings;
 		this.contact = contact;
 		this.rating = rating;
+		this.objectId = objectId;
 	}
 	
 	public String getName() {
@@ -68,6 +70,10 @@ public class ResultsBriefPanelPacket implements Serializable {
 
 	public String getRating() {
 		return this.rating;
+	}
+	
+	public String getObjectId() {
+		return this.objectId;
 	}
 
 }

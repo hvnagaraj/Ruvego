@@ -82,6 +82,8 @@ public class DayActivityPlan {
 	private static Overlay dstMarker;
 
 	private class BoxResultSrcDst {
+		private String ADDRESS = "";
+		private LatLng point;
 		private AbsolutePanel boxResultPanel = new AbsolutePanel();
 		private Label lblPosition = new Label();
 		private HTML name = new HTML();
@@ -99,14 +101,14 @@ public class DayActivityPlan {
 		}
 
 		public void setPosition() {
-			if (!ItineraryCommon.DST_ADDRESS.equalsIgnoreCase("")) {
+			if (!ADDRESS.equalsIgnoreCase("")) {
 				lblPosition.setText(String.valueOf((char)(TOTAL_COUNT_IN_PLAN + SRC_ADDRESS_PRESENT + 65)));
 			}
 		}
 	}
 
-	private static BoxResultSrcDst srcBox = null;
-	private static BoxResultSrcDst dstBox = null;
+	private BoxResultSrcDst srcBox = null;
+	private BoxResultSrcDst dstBox = null;
 
 	private static CheckBox srcDstSame;
 
@@ -251,7 +253,7 @@ public class DayActivityPlan {
 					Iterator<Route> itr = result.getRoutes().iterator();
 					Route route;
 
-					if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
+					if (SRC_ADDRESS_PRESENT != 0 && !srcBox.ADDRESS.equalsIgnoreCase("")) {
 						startIndex = 0;
 					} else {
 						startIndex = 1;
@@ -281,7 +283,7 @@ public class DayActivityPlan {
 	}
 
 	protected void setRouteInfo(String dist, String duration, int count) {
-		if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
+		if (SRC_ADDRESS_PRESENT == 1) {
 			boxResultLL.get(count).routeInfo.setVisible(true);
 			boxResultLL.get(count).routeInfo.setHTML((char)(count + 'A') + " to " + (char)(count + 'A' + 1) + " : " + 
 					dist + " (" + duration + ")");
@@ -370,8 +372,6 @@ public class DayActivityPlan {
 		boxResult.btnDel.setStyleName("imgLogo");
 		boxResult.btnDel.setLayoutData(grid.getRowCount() - SRC_PANEL - DAY_INFO_PRESENT - 1);
 
-		setResultPanelStyle(boxResult.boxResultPanel, grid.getRowCount());
-
 		boxResult.btnDel.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -384,6 +384,9 @@ public class DayActivityPlan {
 				ItineraryCommon.showConfirmPanel();
 			}
 		});
+
+		setResultPanelStyle(boxResult.boxResultPanel, grid.getRowCount());
+
 
 		/* Add everything to Linked List */
 		boxResultLL.add(boxResult);
@@ -416,7 +419,7 @@ public class DayActivityPlan {
 			boxResultLL.get(i).btnDel.setLayoutData(i);
 			setResultPanelStyle(boxResultLL.get(i).boxResultPanel, i);
 		}
-		
+
 		/* If dst panel present, set the style of that panel */
 		if (DST_PANEL == 1) {
 			setResultPanelStyle(dstBox.boxResultPanel, grid.getRowCount());
@@ -428,6 +431,8 @@ public class DayActivityPlan {
 	protected void reorganizePositions(int currentPos, int newPos) {
 		System.out.println("Current Position : " + currentPos + " New Position : " + newPos);
 		System.out.println("Total entries : " + TOTAL_COUNT_IN_PLAN);
+		
+		Ruvego.errorDisplayClear();
 
 		if (newPos < 0) {
 			Ruvego.errorDisplay("New position cannot be -ve");
@@ -497,7 +502,7 @@ public class DayActivityPlan {
 			return;
 		}
 
-		if (TOTAL_COUNT_IN_PLAN == 1 && ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
+		if (TOTAL_COUNT_IN_PLAN == 1 && SRC_ADDRESS_PRESENT == 1) {
 			Ruvego.errorDisplay("Google Maps: Routing requires atleast 1 activity and a source address");
 			return;
 		}
@@ -509,147 +514,141 @@ public class DayActivityPlan {
 
 	public void addWaypoint(boolean isSrc) {
 		if (isSrc == true) {
-			waypointSrc = new Waypoint(ItineraryCommon.srcPoint);
+			waypointSrc = new Waypoint(srcBox.point);
 		} else {
-			waypointDst = new Waypoint(ItineraryCommon.dstPoint);
+			waypointDst = new Waypoint(dstBox.point);
 		}
 	}
 
 
 	protected void setupDstBoxPanel() {
 		System.out.println("Total count : " + TOTAL_COUNT_IN_PLAN);
-		if (dstBox == null) {
-			dstBox = new BoxResultSrcDst();
+		dstBox = new BoxResultSrcDst();
 
-			addToGrid(dstBox.boxResultPanel);//, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
+		addToGrid(dstBox.boxResultPanel);//, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
 
-			dstBox.name.setHTML("End Point");
+		dstBox.name.setHTML("End Point");
 
-			dstBox.img.setPixelSize(35, 25);
-			dstBox.boxResultPanel.add(dstBox.img, DayActivityPlan.BOX_RESULTS_INDENT, 5);
+		dstBox.img.setPixelSize(35, 25);
+		dstBox.boxResultPanel.add(dstBox.img, DayActivityPlan.BOX_RESULTS_INDENT, 5);
 
-			dstBox.lblPosition.setText("");
-			dstBox.lblPosition.setStyleName("whiteText");
-			dstBox.lblPosition.setWidth("34px");
-			dstBox.boxResultPanel.add(dstBox.lblPosition, DayActivityPlan.BOX_RESULTS_INDENT, 8);
-
-
-			dstBox.name.setStyleName("greyText");
-			dstBox.boxResultPanel.add(dstBox.name, DayActivityPlan.BOX_RESULTS_INDENT + dstBox.img.getOffsetWidth() + 5, 8);
-
-			dstBox.boxResultPanel.add(dstBox.suggestBoxAddress, 5, dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
-					+ dstBox.name.getOffsetHeight() + 7);
-			dstBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
+		dstBox.lblPosition.setText("");
+		dstBox.lblPosition.setStyleName("whiteText");
+		dstBox.lblPosition.setWidth("34px");
+		dstBox.boxResultPanel.add(dstBox.lblPosition, DayActivityPlan.BOX_RESULTS_INDENT, 8);
 
 
-			dstBox.routeInfo.setStyleName("routeInfoText");
-			dstBox.boxResultPanel.add(dstBox.routeInfo, 40, dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
-					+ dstBox.suggestBoxAddress.getOffsetHeight() + 5);
+		dstBox.name.setStyleName("greyText");
+		dstBox.boxResultPanel.add(dstBox.name, DayActivityPlan.BOX_RESULTS_INDENT + dstBox.img.getOffsetWidth() + 5, 8);
 
-			dstBox.btnAdd.setPixelSize(40, 24);
-			dstBox.btnAdd.setStyleName("boxBtnAdd");
-			dstBox.boxResultPanel.add(dstBox.btnAdd, dstBox.suggestBoxAddress.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
-					dstBox.suggestBoxAddress.getOffsetWidth(), 
-					dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
-
-			dstBox.btnClear.setHeight("24px");
-			dstBox.btnClear.setStyleName("boxBtnAdd");
-			dstBox.boxResultPanel.add(dstBox.btnClear, dstBox.btnAdd.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
-					dstBox.btnAdd.getOffsetWidth() + 1, 
-					dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
+		dstBox.boxResultPanel.add(dstBox.suggestBoxAddress, 5, dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
+				+ dstBox.name.getOffsetHeight() + 7);
+		dstBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
 
 
-			dstBox.routeInfo.setHTML("");
+		dstBox.routeInfo.setStyleName("routeInfoText");
+		dstBox.boxResultPanel.add(dstBox.routeInfo, 40, dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() 
+				+ dstBox.suggestBoxAddress.getOffsetHeight() + 5);
 
-			dstBox.btnAdd.addClickHandler(new ClickHandler() {
+		dstBox.btnAdd.setPixelSize(40, 24);
+		dstBox.btnAdd.setStyleName("boxBtnAdd");
+		dstBox.boxResultPanel.add(dstBox.btnAdd, dstBox.suggestBoxAddress.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
+				dstBox.suggestBoxAddress.getOffsetWidth(), 
+				dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
 
-				@Override
-				public void onClick(ClickEvent event) {
-					if (dstBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
-						Ruvego.errorDisplay("Destination address is empty");	
-					}
+		dstBox.btnClear.setHeight("24px");
+		dstBox.btnClear.setStyleName("boxBtnAdd");
+		dstBox.boxResultPanel.add(dstBox.btnClear, dstBox.btnAdd.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + 
+				dstBox.btnAdd.getOffsetWidth() + 1, 
+				dstBox.suggestBoxAddress.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
 
-					if (!ItineraryCommon.DST_ADDRESS.equalsIgnoreCase(dstBox.suggestBoxAddress.getText())) {
-						if (dstMarker != null) {
-							Ruvego.getMapWidget().removeOverlay(dstMarker);
-						}
-						ItineraryCommon.DST_ADDRESS = dstBox.suggestBoxAddress.getText();
-						Ruvego.getGeocode().getLatLng(ItineraryCommon.DST_ADDRESS, mapsAddDstCallback);
-					}
+
+		dstBox.routeInfo.setHTML("");
+
+		dstBox.btnAdd.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				if (dstBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
+					Ruvego.errorDisplay("Destination address is empty");	
 				}
-			});
 
-			dstBox.btnClear.addClickHandler(new ClickHandler() {
-
-				@Override
-				public void onClick(ClickEvent event) {
-					if (!ItineraryCommon.DST_ADDRESS.equalsIgnoreCase("")) {
-						if (dstMarker != null) {
-							Ruvego.getMapWidget().removeOverlay(dstMarker);
-						}	
+				if (!dstBox.ADDRESS.equalsIgnoreCase(dstBox.suggestBoxAddress.getText())) {
+					if (dstMarker != null) {
+						Ruvego.getMapWidget().removeOverlay(dstMarker);
 					}
+					dstBox.ADDRESS = dstBox.suggestBoxAddress.getText();
+					Ruvego.getGeocode().getLatLng(dstBox.ADDRESS, mapsAddDstCallback);
+				}
+			}
+		});
 
+		dstBox.btnClear.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				if (!dstBox.ADDRESS.equalsIgnoreCase("")) {
+					if (dstMarker != null) {
+						Ruvego.getMapWidget().removeOverlay(dstMarker);
+					}	
+				}
+
+				dstBox.suggestBoxAddress.setText("");
+				dstBox.ADDRESS = "";
+				Ruvego.errorDisplayClear();
+				dstBox.lblPosition.setText("");
+				dstBox.routeInfo.setVisible(false);
+				dstBox.reSize();
+				DST_ADDRESS_PRESENT = 0;
+				waypointLL.removeLast();
+			}
+		});
+
+		setResultPanelStyle(dstBox.boxResultPanel, grid.getRowCount());
+
+		srcDstSame = new CheckBox("same as start point");
+		srcDstSame.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				if (srcDstSame.getValue() == true) {
+					dstBox.suggestBoxAddress.setText(srcBox.ADDRESS);
+				} else {
 					dstBox.suggestBoxAddress.setText("");
-					ItineraryCommon.DST_ADDRESS = "";
-					Ruvego.errorDisplayClear();
-					dstBox.lblPosition.setText("");
-					dstBox.routeInfo.setVisible(false);
-					dstBox.reSize();
-					DST_ADDRESS_PRESENT = 0;
-					waypointLL.removeLast();
 				}
-			});
+			}
 
-			setResultPanelStyle(dstBox.boxResultPanel, grid.getRowCount());
+		});
 
-			srcDstSame = new CheckBox("same as start point");
-			srcDstSame.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+		dstBox.boxResultPanel.add(srcDstSame, dstBox.name.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + dstBox.name.getOffsetWidth() + 5, 
+				dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
+		srcDstSame.setStyleName("srcDstInfoText");
 
-				@Override
-				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					if (srcDstSame.getValue() == true) {
-						dstBox.suggestBoxAddress.setText(ItineraryCommon.SRC_ADDRESS);
-					} else {
-						dstBox.suggestBoxAddress.setText("");
-					}
-				}
+		mapsAddDstCallback = new LatLngCallback() {
 
-			});
+			@Override
+			public void onFailure() {
+				Ruvego.errorDisplay("Google Maps: Unable to find destination address");
+			}
 
-			dstBox.boxResultPanel.add(srcDstSame, dstBox.name.getAbsoluteLeft() - dstBox.boxResultPanel.getAbsoluteLeft() + dstBox.name.getOffsetWidth() + 5, 
-					dstBox.name.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop());
-			srcDstSame.setStyleName("srcDstInfoText");
-
-			mapsAddDstCallback = new LatLngCallback() {
-
-				@Override
-				public void onFailure() {
-					Ruvego.errorDisplay("Google Maps: Unable to find destination address");
-				}
-
-				@Override
-				public void onSuccess(LatLng point) {
-					ItineraryCommon.dstPoint = LatLng.newInstance(point.getLatitude(), point.getLongitude());
-					Ruvego.errorDisplayClear();
-					dstMarker = new Marker(point);
-					Ruvego.getMapWidget().addOverlay(dstMarker);
-					ItineraryCommon.bounds.extend(point);
-					Ruvego.getMapWidget().setCenter(ItineraryCommon.bounds.getCenter(), Ruvego.getMapWidget().getBoundsZoomLevel(ItineraryCommon.bounds));
+			@Override
+			public void onSuccess(LatLng point) {
+				dstBox.point = LatLng.newInstance(point.getLatitude(), point.getLongitude());
+				Ruvego.errorDisplayClear();
+				dstMarker = new Marker(point);
+				Ruvego.getMapWidget().addOverlay(dstMarker);
+				ItineraryCommon.bounds.extend(point);
+				Ruvego.getMapWidget().setCenter(ItineraryCommon.bounds.getCenter(), Ruvego.getMapWidget().getBoundsZoomLevel(ItineraryCommon.bounds));
 
 
-					dstBox.setPosition();
-					DST_ADDRESS_PRESENT = 1;
-					waypointDst = new Waypoint(point);
-					waypointLL.addLast(waypointDst);
+				dstBox.setPosition();
+				DST_ADDRESS_PRESENT = 1;
+				waypointDst = new Waypoint(point);
+				waypointLL.addLast(waypointDst);
 
-					addWaypoint(false);
-				}
-			};
-
-
-		} else {
-			addToGrid(dstBox.boxResultPanel);//, TOTAL_COUNT_IN_PLAN + SRC_PANEL + DAY_INFO_PRESENT);
-		}
+				addWaypoint(false);
+			}
+		};
 
 		DST_PANEL = 1;
 		dstBox.boxResultPanel.setSize("100%", (dstBox.routeInfo.getAbsoluteTop() - dstBox.boxResultPanel.getAbsoluteTop() + 
@@ -659,122 +658,117 @@ public class DayActivityPlan {
 	}
 
 	public void setupSrcBoxPanel() {
-		if (srcBox == null) {
-			srcBox = new BoxResultSrcDst();
+		srcBox = new BoxResultSrcDst();
 
-			addToGrid(srcBox.boxResultPanel);//, DAY_INFO_PRESENT);
+		addToGrid(srcBox.boxResultPanel);//, DAY_INFO_PRESENT);
 
-			srcBox.name.setHTML("Start Point");
+		srcBox.name.setHTML("Start Point");
 
-			srcBox.img.setPixelSize(35, 25);
-			srcBox.boxResultPanel.add(srcBox.img, DayActivityPlan.BOX_RESULTS_INDENT, 5);
+		srcBox.img.setPixelSize(35, 25);
+		srcBox.boxResultPanel.add(srcBox.img, DayActivityPlan.BOX_RESULTS_INDENT, 5);
 
-			srcBox.lblPosition.setText("");
-			srcBox.lblPosition.setStyleName("whiteText");
-			srcBox.lblPosition.setWidth("34px");
-			srcBox.boxResultPanel.add(srcBox.lblPosition, DayActivityPlan.BOX_RESULTS_INDENT, 8);
-
-
-			srcBox.name.setStyleName("greyText");
-			srcBox.boxResultPanel.add(srcBox.name, DayActivityPlan.BOX_RESULTS_INDENT + srcBox.img.getOffsetWidth() + 5, 8);
-
-			srcBox.boxResultPanel.add(srcBox.suggestBoxAddress, 5, srcBox.name.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
-					+ srcBox.name.getOffsetHeight() + 7);
-			srcBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
+		srcBox.lblPosition.setText("");
+		srcBox.lblPosition.setStyleName("whiteText");
+		srcBox.lblPosition.setWidth("34px");
+		srcBox.boxResultPanel.add(srcBox.lblPosition, DayActivityPlan.BOX_RESULTS_INDENT, 8);
 
 
-			srcBox.routeInfo.setStyleName("routeInfoText");
-			srcBox.boxResultPanel.add(srcBox.routeInfo, 20, srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
-					+ srcBox.suggestBoxAddress.getOffsetHeight() + 2);
+		srcBox.name.setStyleName("greyText");
+		srcBox.boxResultPanel.add(srcBox.name, DayActivityPlan.BOX_RESULTS_INDENT + srcBox.img.getOffsetWidth() + 5, 8);
 
-			srcBox.btnAdd.setPixelSize(40, 24);
-			srcBox.btnAdd.setStyleName("boxBtnAdd");
-			srcBox.boxResultPanel.add(srcBox.btnAdd, srcBox.suggestBoxAddress.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
-					srcBox.suggestBoxAddress.getOffsetWidth(), 
-					srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
-
-			srcBox.btnClear.setHeight("24px");
-			srcBox.btnClear.setStyleName("boxBtnAdd");
-			srcBox.boxResultPanel.add(srcBox.btnClear, srcBox.btnAdd.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
-					srcBox.btnAdd.getOffsetWidth() + 1, 
-					srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
+		srcBox.boxResultPanel.add(srcBox.suggestBoxAddress, 5, srcBox.name.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
+				+ srcBox.name.getOffsetHeight() + 7);
+		srcBox.suggestBoxAddress.setPixelSize(BOX_PANEL_WIDTH - 120, 12);
 
 
-			srcBox.routeInfo.setHTML("");
+		srcBox.routeInfo.setStyleName("routeInfoText");
+		srcBox.boxResultPanel.add(srcBox.routeInfo, 20, srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() 
+				+ srcBox.suggestBoxAddress.getOffsetHeight() + 2);
+
+		srcBox.btnAdd.setPixelSize(40, 24);
+		srcBox.btnAdd.setStyleName("boxBtnAdd");
+		srcBox.boxResultPanel.add(srcBox.btnAdd, srcBox.suggestBoxAddress.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
+				srcBox.suggestBoxAddress.getOffsetWidth(), 
+				srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
+
+		srcBox.btnClear.setHeight("24px");
+		srcBox.btnClear.setStyleName("boxBtnAdd");
+		srcBox.boxResultPanel.add(srcBox.btnClear, srcBox.btnAdd.getAbsoluteLeft() - srcBox.boxResultPanel.getAbsoluteLeft() + 
+				srcBox.btnAdd.getOffsetWidth() + 1, 
+				srcBox.suggestBoxAddress.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop());
 
 
-			srcBox.btnAdd.addClickHandler(new ClickHandler() {
+		srcBox.routeInfo.setHTML("");
 
-				@Override
-				public void onClick(ClickEvent event) {
-					if (srcBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
-						Ruvego.errorDisplay("Source address is empty");	
+
+		srcBox.btnAdd.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				if (srcBox.suggestBoxAddress.getText().equalsIgnoreCase("")) {
+					Ruvego.errorDisplay("Source address is empty");	
+				}
+
+				if (!srcBox.ADDRESS.equalsIgnoreCase(srcBox.suggestBoxAddress.getText())) {
+					if (srcMarker != null) {
+						Ruvego.getMapWidget().removeOverlay(srcMarker);
 					}
-
-					if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase(srcBox.suggestBoxAddress.getText())) {
-						if (srcMarker != null) {
-							Ruvego.getMapWidget().removeOverlay(srcMarker);
-						}
-						ItineraryCommon.SRC_ADDRESS = srcBox.suggestBoxAddress.getText();
-						Ruvego.getGeocode().getLatLng(ItineraryCommon.SRC_ADDRESS, mapsAddSrcCallback);
-					}
+					srcBox.ADDRESS = srcBox.suggestBoxAddress.getText();
+					Ruvego.getGeocode().getLatLng(srcBox.ADDRESS, mapsAddSrcCallback);
 				}
-			});
+			}
+		});
 
-			srcBox.btnClear.addClickHandler(new ClickHandler() {
+		srcBox.btnClear.addClickHandler(new ClickHandler() {
 
-				@Override
-				public void onClick(ClickEvent event) {
-					if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
-						if (srcMarker != null) {
-							Ruvego.getMapWidget().removeOverlay(srcMarker);
-						}	
-					}
-
-					srcBox.suggestBoxAddress.setText("");
-					ItineraryCommon.SRC_ADDRESS = "";
-					Ruvego.errorDisplayClear();
-					srcBox.lblPosition.setText("");
-
-					SRC_ADDRESS_PRESENT = 0;
-					waypointLL.removeFirst();
-
-					reAssignLabels();
-				}
-			});
-
-			mapsAddSrcCallback = new LatLngCallback() {
-
-				@Override
-				public void onFailure() {
-					Ruvego.errorDisplay("Google Maps: Unable to find source address");
+			@Override
+			public void onClick(ClickEvent event) {
+				if (!srcBox.ADDRESS.equalsIgnoreCase("")) {
+					if (srcMarker != null) {
+						Ruvego.getMapWidget().removeOverlay(srcMarker);
+					}	
 				}
 
-				@Override
-				public void onSuccess(LatLng point) {
-					ItineraryCommon.srcPoint = LatLng.newInstance(point.getLatitude(), point.getLongitude());
-					Ruvego.errorDisplayClear();
-					srcMarker = new Marker(point);
-					Ruvego.getMapWidget().addOverlay(srcMarker);
-					ItineraryCommon.bounds.extend(point);
-					Ruvego.getMapWidget().setCenter(ItineraryCommon.bounds.getCenter(), Ruvego.getMapWidget().getBoundsZoomLevel(ItineraryCommon.bounds));
+				srcBox.suggestBoxAddress.setText("");
+				srcBox.ADDRESS = "";
+				Ruvego.errorDisplayClear();
+				srcBox.lblPosition.setText("");
 
-					addWaypoint(true);
+				SRC_ADDRESS_PRESENT = 0;
+				waypointLL.removeFirst();
 
-					srcBox.lblPosition.setText("A");
+				reAssignLabels();
+			}
+		});
 
-					SRC_ADDRESS_PRESENT = 1;
-					waypointSrc = new Waypoint(point);
-					waypointLL.addFirst(waypointSrc);
+		mapsAddSrcCallback = new LatLngCallback() {
 
-					reAssignLabels();
-				}
+			@Override
+			public void onFailure() {
+				Ruvego.errorDisplay("Google Maps: Unable to find source address");
+			}
 
-			};
+			@Override
+			public void onSuccess(LatLng point) {
+				srcBox.point = LatLng.newInstance(point.getLatitude(), point.getLongitude());
+				Ruvego.errorDisplayClear();
+				srcMarker = new Marker(point);
+				Ruvego.getMapWidget().addOverlay(srcMarker);
+				ItineraryCommon.bounds.extend(point);
+				Ruvego.getMapWidget().setCenter(ItineraryCommon.bounds.getCenter(), Ruvego.getMapWidget().getBoundsZoomLevel(ItineraryCommon.bounds));
 
-		} else {
-			addToGrid(srcBox.boxResultPanel);//, DAY_INFO_PRESENT);
-		}
+				addWaypoint(true);
+
+				srcBox.lblPosition.setText("A");
+
+				SRC_ADDRESS_PRESENT = 1;
+				waypointSrc = new Waypoint(point);
+				waypointLL.addFirst(waypointSrc);
+
+				reAssignLabels();
+			}
+
+		};
 
 		SRC_PANEL = 1;
 		srcBox.boxResultPanel.setSize("100%", (srcBox.routeInfo.getAbsoluteTop() - srcBox.boxResultPanel.getAbsoluteTop() + 
@@ -782,10 +776,11 @@ public class DayActivityPlan {
 	}
 
 	private void reAssignLabels() {
+		System.out.println("Re assigning labels");
 		Iterator<BoxResult> itr = boxResultLL.iterator();
 
 		int count = 0;
-		if (!ItineraryCommon.SRC_ADDRESS.equalsIgnoreCase("")) {
+		if (!srcBox.ADDRESS.equalsIgnoreCase("")) {
 			count = 'B';
 		} else {
 			count = 'A';

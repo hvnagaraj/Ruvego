@@ -9,7 +9,8 @@ public class ResultsPacket implements Serializable {
 	private int num_cols;
 	private int num_elem;
 	private int id;
-	private String next = new String();
+	private String next;
+	
 
 	/* Header of the table */
 	public ResultsPacket(String[] columnData, int num_cols, int num_elem) {
@@ -54,4 +55,5 @@ public class ResultsPacket implements Serializable {
 	public String getNext() {
 		return this.next;
 	}
+	
 }

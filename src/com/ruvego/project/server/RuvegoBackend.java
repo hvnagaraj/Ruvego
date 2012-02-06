@@ -9,10 +9,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.bson.types.ObjectId;
+
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -21,6 +24,7 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.ruvego.project.client.CategoryPacket;
+import com.ruvego.project.client.LoginModule;
 import com.ruvego.project.client.ResultsBriefPanelPacket;
 import com.ruvego.project.client.ResultsFetch;
 import com.ruvego.project.client.ResultsPacket;
@@ -44,11 +48,11 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 	DBCursor data;
 	BasicDBObject dataObject;
 	Object value;
-	
+
 
 	@Override
 	public ResultsPacket[] fetchResults(String place, String withinMiles, int timeOfTheDay, String prevType, String request) {
-		
+
 		System.out.println("Place : " + place + " within : " + withinMiles + " timeOfTheDay : " + timeOfTheDay + " RequestType : "
 				+ request + " prevType : " + prevType);
 
@@ -70,22 +74,22 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		int numCols = 0;
 		if (header.hasNext()) {
 			loopCount++;
-			
+
 			assert(loopCount == 1);
-			
+
 			DBObject headerObject = header.next();
 
 			numCols = (Integer) headerObject.get("numcols");
-			
+
 			/* Construct the array after the No of Cols is determined. This loop should run just once */
 			headerResult = new String[numCols];
 			result = new String[numCols];
-			
+
 			nextType = (String) headerObject.get("next");
 			headerResult = getHeader(numCols, headerObject);
 			System.out.println("Server: Header Found. No of Cols = " + numCols);
 		}
-		
+
 		assert(headerResult != null);
 		assert(result != null);
 
@@ -96,7 +100,7 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		int milesInt = Integer.parseInt(withinMiles.substring(0, 3).replaceAll(" ", "")); 
 		System.out.println("Dist in integer : " + milesInt);
 		queryContent.put(place, new BasicDBObject().append("$lte", milesInt));
-		
+
 		if (timeOfTheDay == BIN_DAYTIME) {
 			queryContent.put("timeoftheday", new BasicDBObject().append("$ne", BIN_NIGHTLIFE));
 		} else if (timeOfTheDay == BIN_NIGHTLIFE) {
@@ -104,16 +108,16 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		} else {
 			queryContent.put("timeoftheday", new BasicDBObject().append("$lte", timeOfTheDay));
 		}
-		
+
 		queryContent.append(prevType, request);
-		
+
 		content = coll.find(queryContent);
 		int numRows = content.count();
-		
+
 		System.out.println("No of elements : " + numRows);
 
 		ResultsPacket[] packet = new ResultsPacket[numRows + 1];
-		
+
 		/* Construct the Header packet. This packet has the header information for the Grid table */
 		packet[0] = new ResultsPacket(headerResult, numCols, numRows);
 
@@ -318,7 +322,7 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 			String withinMiles, int timeOfTheDayType) {
 
 		connectDB("Category");
-		
+
 		return getCategoryData(place, withinMiles, timeOfTheDayType);
 	}
 
@@ -326,7 +330,7 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 			int timeOfTheDay) {
 		String delims;
 		String[] tokens;
-		
+
 		System.out.println("Server Category Query : Place - " + place + " Within Range - " + withinMiles + " Time of the day - " + timeOfTheDay);
 
 		/* Query */
@@ -336,7 +340,7 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		delims = " miles";
 		tokens = withinMiles.split(delims);
 		query.put(place, new BasicDBObject().append("$lte", Integer.parseInt(tokens[0])));
-		
+
 		if (timeOfTheDay == BIN_DAYTIME) {
 			query.put("timeoftheday", new BasicDBObject().append("$ne", BIN_NIGHTLIFE));
 		} else if (timeOfTheDay == BIN_NIGHTLIFE) {
@@ -344,7 +348,7 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		} else {
 			query.put("timeoftheday", new BasicDBObject().append("$lte", timeOfTheDay));
 		}
-		
+
 		DBCursor content = coll.find(query);
 		CategoryPacket returnData = new CategoryPacket(content.count());
 
@@ -368,29 +372,31 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 	public CategoryPacket fetchSubcategoryResults(String place,
 			String withinMiles, int timeOfTheDayType) {
 		connectDB("SubCategory");
-		
+
 		return getCategoryData(place, withinMiles, timeOfTheDayType);
 	}
 
 	@Override
 	public ResultsBriefPanelPacket fetchBriefPanelResults(String name) {
-		
+
 		ResultsBriefPanelPacket packet = null;
-		
+
 		connectDB("Activity");
-		
+
 		/* Query */
 		query = new BasicDBObject();
 		query.put("name", name);
-		
+
 		DBCursor content = coll.find(query);
 
 		while(content.hasNext()) {
 			DBObject data = content.next();
 
+			String id = data.get("_id").toString();
+			System.out.println("id : " + id);
 			packet = new ResultsBriefPanelPacket(name, (String) data.get("address"), (String) data.get("brief"), 
 					(String) data.get("website"), (String) data.get("rating"), (String) data.get("imagepath"), 
-					(String) data.get("miscinfo"), (String) data.get("timings"), (String) data.get("contact"));
+					(String) data.get("miscinfo"), (String) data.get("timings"), (String) data.get("contact"), id);
 			System.out.println("Server Image path : " + (String) data.get("imagepath"));
 			System.out.println("Contact : " + (String) data.get("contact"));
 		}
@@ -402,14 +408,14 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 	@Override
 	public boolean authenticateUser(String username, String password) {
 		connectDB("authenticatedusers");
-		
+
 		/* Query */
 		query = new BasicDBObject();
 		query.put("username", username);
 		query.put("password", password);
-		
+
 		DBCursor content = coll.find(query);
-		
+
 		while(content.hasNext()) {
 			return true;
 		}
@@ -417,21 +423,88 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 	}
 
 	@Override
-	public ItineraryDataPacket fetchItineraryData(String itineraryName) {
+	public ItineraryDataPacket fetchItineraryData(String itineraryName, String username) {
+		ItineraryDataPacket dataPacket = null;
+		connectDB("Itinerary");
+
+		/* Query */
+		query = new BasicDBObject();
+		query.put("name", itineraryName);
+		query.put("users", username);
+
+		DBCursor content = coll.find(query);
+
+		while(content.hasNext()) {
+			DBObject data = content.next();
+			System.out.println("found------------------------------");
+
+			int numDays = Integer.parseInt((String) data.get("numdays"));
+			dataPacket = new ItineraryDataPacket(numDays, (String)data.get("startdate"), 0);
+
+			String[] temp = new String[2];
+			for (int i = 0; i < numDays; i++) {
+				BasicDBList activityList = (BasicDBList) data.get("Day " + (i + 1));
+				
+				if (activityList == null || activityList.size() == 0) {
+					dataPacket.setData(i, 0, null, null);
+					continue;
+				}
+
+				String[] nameList = new String[activityList.size()];
+				String[] addressList = new String[activityList.size()];
+				for (int j = 0; j < activityList.size(); j++) {
+					temp = getActivityNameAddress(activityList.get(j));
+					nameList[j] = temp[0];	
+					addressList[j] = temp[1];
+				}
+				dataPacket.setData(i, activityList.size(), nameList, addressList);
+			}
+		}
+		return dataPacket;
+
+
+/*
 		String[] tempName = new String[2];
 		tempName[0] = "nagaraj";
 		tempName[1] = "hiiiiii";
-		
+
+		System.out.println("Itinerary Name : " + itineraryName);
+
 		String[] tempAddress = new String[2];
 		tempAddress[0] = "nagaraj";
 		tempAddress[1] = "hiiiiii";
-		
-		ItineraryDataPacket tempPacket = new ItineraryDataPacket(1, "11/12/2011");
-		
-		for (int i = 0; i < 1; i++) {
+
+		ItineraryDataPacket tempPacket = new ItineraryDataPacket(2, "11/12/2011", 0);
+
+		for (int i = 0; i < 2; i++) {
 			tempPacket.setData(i, 2, tempName, tempAddress);
 		}
 		return tempPacket;
+		*/
+		
 	}
+
+	protected String[] getActivityNameAddress(Object object) {
+		String[] nameAddress = new String[2];
+
+		connectDB("Activity");
+
+		/* Query */
+		query = new BasicDBObject();
+		query.put("_id", object);
+
+		DBCursor content = coll.find(query);
+
+		while(content.hasNext()) {
+			DBObject data = content.next();
+
+			nameAddress[0] = (String) data.get("name");
+			nameAddress[1] = (String) data.get("address");
+		}
+
+		return nameAddress;
+	}
+	
+
 }
 

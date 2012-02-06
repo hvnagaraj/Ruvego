@@ -32,8 +32,8 @@ public class CreateItinerary {
 
 	private static String ITINERARY_NAME = "";
 	private static String NUM_DAYS = "";
-	private static Date START_DATE;
-	private static boolean FROM_BOX_PAGE = false;
+	//private static Date START_DATE;
+	//private static boolean FROM_BOX_PAGE = false;
 
 	private static PopupPanel popUpPanel;
 	private static VerticalPanel createItineraryPanel;
@@ -118,7 +118,7 @@ public class CreateItinerary {
 		lblError.setStyleName("itineraryLoginError");
 
 		createItineraryPanel.add(savePanel);
-
+		
 		callbackCreateItinerary = new AsyncCallback<Boolean>() {
 
 			@Override
@@ -134,10 +134,12 @@ public class CreateItinerary {
 				}
 				
 				Ruvego.setItineraryText(ITINERARY_NAME);
-				Ruvego.itineraryNamePanelAlignments();
 				
-				History.newItem("itineraryView=?" + ITINERARY_NAME);
+				History.newItem("itineraryPage/" + ITINERARY_NAME);
 				createItinerary();
+				
+				ItineraryState.setName(ITINERARY_NAME);
+				
 				System.out.println("Client: Successfullly created itinerary");
 
 			}
@@ -166,8 +168,6 @@ public class CreateItinerary {
 							dateBoxStartDate.getTextBox().getText(), LoginModule.getUsername());  
 
 					ITINERARY_NAME = txtBoxName.getText();
-					START_DATE = dateBoxStartDate.getValue(); 
-							//dateBoxStartDate.getTextBox().getValue();
 					
 					Ruvego.getResultsWriteService().writeCreateItinerary(createItineraryPacket, callbackCreateItinerary);
 
@@ -195,7 +195,7 @@ public class CreateItinerary {
 
 	protected void createItinerary() {
 		itineraryPage = ItineraryPage.getPage();
-		itineraryPage.fetchResults(ITINERARY_NAME);
+		itineraryPage.fetchResults();
 		
 		ItineraryPage.panelResizeAlignments();
 		Ruvego.panelAlignments();
@@ -216,7 +216,6 @@ public class CreateItinerary {
 		panelsView();
 		vNumDaysPanel.setVisible(true);
 		lblStartDate.setText("Start Date");
-		FROM_BOX_PAGE = false;
 	}
 	
 	public void panelsOneDayView() {
@@ -224,7 +223,6 @@ public class CreateItinerary {
 		vNumDaysPanel.setVisible(false);
 		lblStartDate.setText("Date");
 		NUM_DAYS = "1";
-		FROM_BOX_PAGE = true;
 	}
 
 	public void clearContent() {

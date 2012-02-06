@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -20,8 +21,6 @@ public class RuvegoBoxPage {
 	final static int BOTTOM_BLANK_HEIGHT = 30;
 	
 	protected static DayActivityPlan boxPlan;
-	
-	private static DayActivityPlan testPlan;
 	
 	private static VerticalPanel vPanel;
 
@@ -43,8 +42,7 @@ public class RuvegoBoxPage {
 		System.out.println("Creating an object of type RuvegoBoxPage");
 		vPanel = new VerticalPanel();
 		vPanel.setWidth("100%");
-		
-		boxPlan = new DayActivityPlan(vPanel);		
+				
 		scrollPanel = new ScrollPanel(vPanel);
 
 		RootPanel.get().add(scrollPanel, Ruvego.getIndent(), Ruvego.getOtherWidgetTop());
@@ -105,9 +103,13 @@ public class RuvegoBoxPage {
 
 	public void fetchBoxResults() {
 		Ruvego.setMapsPosition(DayActivityPlan.BOX_PANEL_WIDTH, BOTTOM_BLANK_HEIGHT);
-		Ruvego.getMapWidget().clearOverlays();
+		
 		String cookieItemCount = Cookies.getCookie("itemcount");
 
+		/* Clearing any previous Box or Itinerary entries */
+		vPanel.clear();
+		Ruvego.getMapWidget().clearOverlays();
+		ItineraryCommon.bounds = LatLngBounds.newInstance();
 
 		if (cookieItemCount != null && Integer.parseInt(cookieItemCount) != 0) {
 			boxValueCount = Integer.parseInt(cookieItemCount);
@@ -118,23 +120,20 @@ public class RuvegoBoxPage {
 				return;
 			}
 
-			String entryDelims = "<;;>";
 			String[] entry;
-			String cookieItems = Cookies.getCookie("itemsdata");
-
-			entry = cookieItems.split(entryDelims);
+			entry = Ruvego.parseString(Cookies.getCookie("itemsdata"), "<;;>");
 
 			String[] nameList = new String[boxValueCount];
 			String[] addressList = new String[boxValueCount];
 
-			String fieldsDelims = "<;>";
 			String[] fields;
 			for (int i = 0; i < boxValueCount; i++) {
-				fields = entry[i].split(fieldsDelims);
+				fields = Ruvego.parseString(entry[i], "<;>");
 				nameList[i] = fields[0];
 				addressList[i] = fields[1];
 			}
 
+			boxPlan = new DayActivityPlan(vPanel);
 			boxPlan.setupSrcBoxPanel();
 			boxPlan.addResults(nameList, addressList, boxValueCount);
 			boxPlan.dayName = "Box";

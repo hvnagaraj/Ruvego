@@ -16,4 +16,7 @@ public interface ResultsWriteAsync {
 
 	void writeCreateItinerary(CreateItineraryPacket createItineraryPacket,
 			AsyncCallback<Boolean> callbackCreateItinerary);
+
+	void addEntry(String itineraryName, String day, String objectId,
+			String username, AsyncCallback<Boolean> callbackAddEntry);
 }
