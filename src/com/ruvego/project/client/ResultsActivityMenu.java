@@ -152,19 +152,10 @@ public class ResultsActivityMenu {
 		};
 
 		activityMenuPopUpPanel.addAutoHidePartner(btnMenu.getElement());
-		itineraryActive();
+		setupItineraryActive();
 		panelalignments();
 
 		menuHide();
-	}
-
-	private void itineraryActive() {
-		System.out.println("itinejhgjhgj state : " + ItineraryState.isItineraryActive());
-		if (ItineraryState.isItineraryActive() == false) {
-//	/		return;
-		}
-		System.out.println("heretreu");
-		onItineraryActive();
 	}
 
 	protected String prepareEntryForInsert(String name, String address) {
@@ -194,10 +185,7 @@ public class ResultsActivityMenu {
 		btnMenu.setStyleName("activityBtnMore");	
 	}
 
-	protected static void onItineraryActive() {
-		if (ResultsActivityMenu.page == null) {
-			return;
-		}
+	protected static void setupItineraryActive() {
 		System.out.println("adding add to itinerary in the menu");
 		setupAddToItineraryText(ItineraryState.ITINERARY_NAME);
 		listBoxDayList.clear();
@@ -222,6 +210,13 @@ public class ResultsActivityMenu {
 	protected void panelalignments() {
 		RootPanel.get().setWidgetPosition(activityMenuPopUpPanel, btnMenu.getAbsoluteLeft(), 
 				btnMenu.getAbsoluteTop() - activityMenuPopUpPanel.getOffsetHeight());
+	}
+
+	public static void setItineraryActive() {
+		if (page == null) {
+			return;
+		}
+		setupItineraryActive();
 	}
 
 }

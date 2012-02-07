@@ -138,12 +138,6 @@ public class RuvegoBoxPage {
 			boxPlan.addResults(nameList, addressList, boxValueCount);
 			boxPlan.dayName = "Box";
 			boxPlan.setupDstBoxPanel();
-/*			
-			testPlan = new DayActivityPlan(vPanel);
-			testPlan.addResults(entry, 3);
-			testPlan.dayName = "Day 2";
-			
-			*/
 		}
 
 		panelAlignments();

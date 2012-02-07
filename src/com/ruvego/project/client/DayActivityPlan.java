@@ -118,7 +118,7 @@ public class DayActivityPlan {
 
 	private Waypoint waypoint;
 
-	private LinkedList<Waypoint> waypointLL;
+	protected LinkedList<Waypoint> waypointLL;
 
 	protected BoxResult boxResult;
 
@@ -241,45 +241,44 @@ public class DayActivityPlan {
 		opts = new DirectionQueryOptions(Ruvego.getMapWidget(), 
 				ItineraryCommon.directionsPanel); 
 
-		if (directionsCallback == null) {
-			directionsCallback = new DirectionsCallback() { 
-				public void onFailure(int statusCode) { 
-					Ruvego.errorDisplay("Google Maps: Route not found for 1 or more addresses in your list"); 
-					ItineraryCommon.routeBriefPanel.setVisible(false);
+		directionsCallback = new DirectionsCallback() { 
+			public void onFailure(int statusCode) { 
+				Ruvego.errorDisplay("Google Maps: Route not found for 1 or more addresses in your list"); 
+				ItineraryCommon.routeBriefPanel.setVisible(false);
+			}
+
+			public void onSuccess(DirectionResults result) {
+				int startIndex, count;
+				Iterator<Route> itr = result.getRoutes().iterator();
+				Route route;
+
+				if (SRC_ADDRESS_PRESENT != 0 && !srcBox.ADDRESS.equalsIgnoreCase("")) {
+					startIndex = 0;
+				} else {
+					startIndex = 1;
 				}
 
-				public void onSuccess(DirectionResults result) {
-					int startIndex, count;
-					Iterator<Route> itr = result.getRoutes().iterator();
-					Route route;
+				count = 0;
+				while (itr.hasNext()) {
+					route = itr.next();
+					if (count == TOTAL_COUNT_IN_PLAN) {
+						dstBox.routeInfo.setHTML((char)(count - startIndex + 65) + " to " + (char)(count - startIndex + 65 + 1) + " : " + 
+								route.getDistance().inLocalizedUnits() + " (" +
+								route.getDuration().inLocalizedUnits() + ")");
 
-					if (SRC_ADDRESS_PRESENT != 0 && !srcBox.ADDRESS.equalsIgnoreCase("")) {
-						startIndex = 0;
-					} else {
-						startIndex = 1;
+						dstBox.reSize();
+						break;
 					}
 
-					count = 0;
-					while (itr.hasNext()) {
-						route = itr.next();
-						if (count == TOTAL_COUNT_IN_PLAN) {
-							dstBox.routeInfo.setHTML((char)(count - startIndex + 65) + " to " + (char)(count - startIndex + 65 + 1) + " : " + 
-									route.getDistance().inLocalizedUnits() + " (" +
-									route.getDuration().inLocalizedUnits() + ")");
+					setRouteInfo(route.getDistance().inLocalizedUnits(), route.getDuration().inLocalizedUnits(), count);
 
-							dstBox.reSize();
-							break;
-						}
+					count++;
+				}
 
-						setRouteInfo(route.getDistance().inLocalizedUnits(), route.getDuration().inLocalizedUnits(), count);
+				ItineraryCommon.setTotalDistDuration(result.getDistance().inLocalizedUnits(), result.getDuration().inLocalizedUnits());
+			} 
+		};
 
-						count++;
-					}
-
-					ItineraryCommon.setTotalDistDuration(result.getDistance().inLocalizedUnits(), result.getDuration().inLocalizedUnits());
-				} 
-			};
-		}
 	}
 
 	protected void setRouteInfo(String dist, String duration, int count) {
@@ -431,7 +430,7 @@ public class DayActivityPlan {
 	protected void reorganizePositions(int currentPos, int newPos) {
 		System.out.println("Current Position : " + currentPos + " New Position : " + newPos);
 		System.out.println("Total entries : " + TOTAL_COUNT_IN_PLAN);
-		
+
 		Ruvego.errorDisplayClear();
 
 		if (newPos < 0) {
@@ -498,12 +497,12 @@ public class DayActivityPlan {
 		Ruvego.getMapWidget().clearOverlays();
 
 		if (TOTAL_COUNT_IN_PLAN == 0) {
-			Ruvego.errorDisplay("Google Maps: No activities in the Box");
+			Ruvego.errorDisplay("Google Maps: No activities present");
 			return;
 		}
 
-		if (TOTAL_COUNT_IN_PLAN == 1 && SRC_ADDRESS_PRESENT == 1) {
-			Ruvego.errorDisplay("Google Maps: Routing requires atleast 1 activity and a source address");
+		if (TOTAL_COUNT_IN_PLAN == 1) {
+			Ruvego.errorDisplay("Google Maps: Only one activity present");
 			return;
 		}
 

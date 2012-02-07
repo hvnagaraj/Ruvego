@@ -17,7 +17,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class BoxMenu {
 	static private BoxMenu page;
 
-	private static Image imgIcon;
+	private static Label imgIcon;
 	
 	private static VerticalPanel menuInputPanel;
 	
@@ -34,13 +34,13 @@ public class BoxMenu {
 
 	private BoxMenu() {
 		popUpPanel = new PopupPanel(true, true);
-		popUpPanel.setStyleName("itineraryEntryPopUpPanel");
+		popUpPanel.setStyleName("mainMenuPopUpPanel");
 		
-		imgIcon = new Image("Images/menuwhite.png");
-		imgIcon.setStyleName("imgMenu");
+		imgIcon = new Label("Menu");
+		imgIcon.setStyleName("mainMenu");
 		
 		Ruvego.getSecondHeaderPanel().add(imgIcon);
-		Ruvego.getSecondHeaderPanel().setWidgetPosition(imgIcon, 5, 7);
+		Ruvego.getSecondHeaderPanel().setWidgetPosition(imgIcon, 5, 0);
 		
 		menuInputPanel = new VerticalPanel();
 		menuInputPanel.setWidth("250px");
@@ -55,7 +55,6 @@ public class BoxMenu {
 		RootPanel.get().setWidgetPosition(popUpPanel, 5, imgIcon.getAbsoluteTop() + imgIcon.getOffsetHeight() + 4);
 		
 		menuInputPanel.add(lblCreateItinerary);
-		menuInputPanel.setStyleName("menuInputPanel");
 		
 		imgIcon.addClickHandler(new ClickHandler() {
 			
@@ -95,15 +94,17 @@ public class BoxMenu {
 	}
 
 	protected void menuHide() {
+		imgIcon.setStyleName("mainMenu");
 		menuInputPanel.setVisible(false);
 		popUpPanel.setVisible(false);
 	}
 
 	protected void menuShow() {
+		imgIcon.setStyleName("mainMenuNormal");
 		menuInputPanel.setVisible(true);	
 		popUpPanel.setVisible(true);
 		popUpPanel.show();
-		RootPanel.get().setWidgetPosition(popUpPanel, 5, imgIcon.getAbsoluteTop() + imgIcon.getOffsetHeight() + 4);
+		RootPanel.get().setWidgetPosition(popUpPanel, 5, imgIcon.getAbsoluteTop() + imgIcon.getOffsetHeight());
 	}
 
 	public static void clearContent() {

@@ -247,7 +247,6 @@ public class Ruvego implements EntryPoint {
 		Cookies.setCookie("itemcount", lblBoxCount.getText(), expires, null, "/", false);
 
 		/* <;;> between entries and <;> between fields of an entry */
-		System.out.println("Cookie value : " + cookieValue);
 		Cookies.setCookie("itemsdata", cookieValue + "<;;>" + data, expires, null, "/", false);
 		boxInfo("Entry added to Box");
 		System.out.println("Cookie entry added");
@@ -335,8 +334,8 @@ public class Ruvego implements EntryPoint {
 		resultsWriteService = GWT.create(ResultsWrite.class);
 
 		//TODO change before commit. Must be authenticateUser()
-		userAuthenticated();
-		//authenticateUser();
+		//userAuthenticated();
+		authenticateUser();
 	}
 
 	private void authenticateUser() {
@@ -404,6 +403,8 @@ public class Ruvego implements EntryPoint {
 		dialogbox.setWidget(dialogBoxContents);
 		dialogbox.center();
 		dialogBoxContents.setSpacing(4);
+		
+		setMinimumPageHeight(650);
 	}
 
 	private void userAuthenticated() {
@@ -531,15 +532,12 @@ public class Ruvego implements EntryPoint {
 						formContributePage();
 					} else if (historyToken.contains("homePage")) {
 						formHomePage();
-						mapControlsSetLeft();
 					} else if (historyToken.contains("aboutPage")) {
 						formAboutPage();
 					} else if (historyToken.contains("boxView")) {
 						formBoxView();
-						mapControlsSetRight();
 					} else if (historyToken.contains("itineraryPage")) {
 						formItineraryPage();
-						mapControlsSetRight();
 					} else {
 						clearOtherPages("homePage");
 					}
@@ -554,6 +552,7 @@ public class Ruvego implements EntryPoint {
 
 	protected void formItineraryPage() {
 		clearOtherPages("itineraryPage");
+		mapControlsSetRight();
 		if (itineraryPage == null) {
 			itineraryPage = ItineraryPage.getPage();
 		} else {
@@ -754,6 +753,7 @@ public class Ruvego implements EntryPoint {
 	/** No Panels are made visible in this. This is used to just create the Home Page and align and not to show results */
 	protected void formHomePage() {
 		clearOtherPages("homePage");
+		mapControlsSetLeft();
 		if (homePage == null) {
 			homePage = RuvegoHomePage.getPage();
 		} else {
@@ -927,6 +927,7 @@ public class Ruvego implements EntryPoint {
 
 	protected void formBoxView() {
 		clearOtherPages("boxView");
+		mapControlsSetRight();
 		if (boxView == null) {
 			boxView = RuvegoBoxPage.getPage();
 		} else {

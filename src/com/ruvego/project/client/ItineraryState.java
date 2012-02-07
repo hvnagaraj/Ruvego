@@ -71,7 +71,7 @@ public class ItineraryState {
 		Date expires = new Date(System.currentTimeMillis() + DURATION);
 		Cookies.setCookie("numdays", String.valueOf(NUM_DAYS), expires, null, "/", false);
 		
-		ResultsActivityMenu.onItineraryActive();
+		ResultsActivityMenu.setItineraryActive();
 	}
 
 	public static void setName(String itineraryName) {

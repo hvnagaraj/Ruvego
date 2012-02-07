@@ -615,6 +615,17 @@
 	border-radius: 4px;
 }
 
+.btnRouteItinerary {
+	background-color: #313131;
+	color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	font-size: 16px;
+	cursor: pointer;
+	text-align: center;
+	border: 0px;
+	padding: 6px 10px 6px 10px;
+}
+
 .boxItineraryInfo {
 	color: #313131;
 	font-family: "Arvo", Helvetica, sans-serif;
@@ -689,7 +700,6 @@
 }
 
 .itineraryEntryPopUpPanel {
-	border: 0px;
 	background-color: white;
 	border: 1px solid #313131;
 }
@@ -708,4 +718,78 @@
 	font-size: 14px;
 	padding: 5px 0px 5px 0px;
 	text-indent: 5px;
+}
+
+.btnRoutePanel {
+	background-color: #313131;
+}
+
+.btnRouteItemText {
+	cursor: pointer;
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 14px;
+	word-wrap: normal;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	text-indent: 6px;
+}
+
+.btnRouteItemTextNormal {
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 14px;
+	word-wrap: normal;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	text-indent: 2px;
+}
+
+
+.btnRouteItemText:hover {
+	background-color: grey;
+	color: white;
+	cursor: pointer;
+}
+
+.mainMenu {
+	background: rgba(0, 0, 0, 0);
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: white;
+	font-size: 14px;
+	cursor: pointer;
+	padding-top: 6px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 6px;
+}
+
+.mainMenuNormal {
+	background-color: white;
+	font-family: "Arvo", Helvetica, sans-serif;
+	color: black;
+	font-size: 14px;
+	cursor: pointer;
+	padding-top: 6px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 6px;
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+}
+
+.mainMenu:hover {
+	background-color: grey;
+}
+
+.menuInputPanel {
+	border-bottom: 0px;
+}
+
+.mainMenuPopUpPanel {
+	background-color: white;
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
 }

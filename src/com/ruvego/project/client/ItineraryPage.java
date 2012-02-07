@@ -3,14 +3,22 @@ package com.ruvego.project.client;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.LinkedList;
 
 import javax.swing.Scrollable;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.maps.client.geocode.DirectionQueryOptions;
+import com.google.gwt.maps.client.geocode.DirectionResults;
+import com.google.gwt.maps.client.geocode.Directions;
+import com.google.gwt.maps.client.geocode.DirectionsCallback;
+import com.google.gwt.maps.client.geocode.Waypoint;
 import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -45,6 +53,12 @@ public class ItineraryPage {
 
 	private static VerticalPanel vRoutePanel;
 
+	private static LinkedList<Waypoint> waypointsAll;
+
+	private static DirectionQueryOptions opts;
+
+	private static DirectionsCallback directionsCallback;
+
 	public static ItineraryPage getPage() {
 		if (page == null) {
 			page = new ItineraryPage();
@@ -59,6 +73,9 @@ public class ItineraryPage {
 		vPanel.setWidth("100%");
 		itineraryPanel = new ScrollPanel(vPanel);
 		vRoutePanel = new VerticalPanel();
+		vRoutePanel.setWidth("150px");
+		vRoutePanel.setStyleName("btnRoutePanel");
+		vRoutePanel.setSpacing(5);
 
 		btnRouteItineraryPopUpPanel = new PopupPanel(true, true);
 		btnRouteItineraryPopUpPanel.setStyleName("popUpPanel");
@@ -69,7 +86,7 @@ public class ItineraryPage {
 				Ruvego.getFooterHeight() - 3);
 
 		Label lblRouteAll = new Label("Route All");
-		lblRouteAll.setStyleName("menuItemText");
+		lblRouteAll.setStyleName("btnRouteItemText");
 		lblRouteAll.setWidth("100%");
 
 		vRoutePanel.add(lblRouteAll);
@@ -79,6 +96,12 @@ public class ItineraryPage {
 			@Override
 			public void onClick(ClickEvent event) {
 				menuHide();
+				waypointsAll.clear();
+				for (int i = 0; i < ItineraryState.getNumDays(); i++) {
+					waypointsAll.addAll(itineraryPlan[i].waypointLL);
+				}
+
+				mapRoute();
 			}
 		});
 
@@ -86,7 +109,7 @@ public class ItineraryPage {
 		HorizontalPanel routeDayPanel = new HorizontalPanel();
 
 		Label lblRouteDay = new Label("Route : ");
-		lblRouteDay.setStyleName("menuItemTextNormal");
+		lblRouteDay.setStyleName("btnRouteItemTextNormal");
 
 		listDays = new ListBox();
 
@@ -100,9 +123,11 @@ public class ItineraryPage {
 		RootPanel.get().add(btnRouteItineraryPopUpPanel);
 
 		btnRouteItinerary = new Label("Route");
-		btnRouteItinerary.setStyleName("btnRoute");
+		btnRouteItinerary.setStyleName("btnRouteItinerary");
 		Ruvego.getMapsPanel().add(btnRouteItinerary);//, Ruvego.getMapsPanel().getOffsetWidth() - 90, 12);
-		//RootPanel.get().add(btnRouteItinerary);
+
+
+		waypointsAll = new LinkedList<Waypoint>();
 
 		btnRouteItinerary.addClickHandler(new ClickHandler() {
 
@@ -142,6 +167,32 @@ public class ItineraryPage {
 			}
 		});
 
+		listDays.addChangeHandler(new ChangeHandler() {
+
+			@Override
+			public void onChange(ChangeEvent event) {
+				menuHide();
+				itineraryPlan[listDays.getSelectedIndex() - 1].mapRoute();
+			}
+		});
+
+		directionsCallback = new DirectionsCallback() {
+
+			@Override
+			public void onSuccess(DirectionResults result) {
+				ItineraryCommon.setTotalDistDuration(result.getDistance().inLocalizedUnits(), result.getDuration().inLocalizedUnits());
+			}
+
+			@Override
+			public void onFailure(int statusCode) {
+				Ruvego.errorDisplay("Google Maps: Route not found for 1 or more addresses in your list"); 
+				ItineraryCommon.routeBriefPanel.setVisible(false);
+			}
+		};
+
+		opts = new DirectionQueryOptions(Ruvego.getMapWidget(), 
+				ItineraryCommon.directionsPanel);
+
 		btnRouteItineraryPopUpPanel.addAutoHidePartner(btnRouteItinerary.getElement());
 
 
@@ -150,6 +201,24 @@ public class ItineraryPage {
 		menuHide();
 
 		panelResizeAlignments();
+	}
+
+	protected void mapRoute() {
+		ItineraryCommon.routeBriefPanel.setVisible(false);
+		Ruvego.getMapWidget().clearOverlays();
+
+		if (waypointsAll.size() == 0) {
+			Ruvego.errorDisplay("Google Maps: No activities present");
+			return;
+		}
+
+		if (waypointsAll.size() == 1) {
+			Ruvego.errorDisplay("Google Maps: Only one activity present");
+			return;
+		}
+
+		Ruvego.errorDisplayClear();
+		Directions.loadFromWaypoints(waypointsAll.toArray(new Waypoint[waypointsAll.size()]), opts, directionsCallback);
 	}
 
 	public void setupItinerary(ItineraryDataPacket result) {
@@ -163,13 +232,17 @@ public class ItineraryPage {
 
 		itineraryPlan = new DayActivityPlan[result.getNumDays()];
 
+		listDays.clear();
+
 		for (int i = 0; i < result.getNumDays(); i++) {
 			System.out.println("In loop : " + i);
 			itineraryPlan[i] = new DayActivityPlan(vPanel);
 
 			itineraryPlan[i].dayName = "Day " + (i + 1);
 
-			CalendarUtil.addDaysToDate(date, 1);
+			if (i > 0) {
+				CalendarUtil.addDaysToDate(date, 1);
+			}
 			itineraryPlan[i].addDayDatePanel(i + 1, format.format(date).toString());
 
 			if (i == 0) {
@@ -180,11 +253,16 @@ public class ItineraryPage {
 				itineraryPlan[i].addResults(result.getNameList(i), result.getAddressList(i), result.getNumEntries(i));
 			}
 
-
 			if (i == (result.getNumDays() - 1)) {
 				itineraryPlan[i].setupDstBoxPanel();
 			}
 		}
+
+		listDays.addItem("Choose");
+		for (int i = 0; i < result.getNumDays(); i++) {
+			listDays.addItem("Day " + (i + 1));
+		}
+
 	}
 
 	public static void panelResizeAlignments() {
@@ -199,6 +277,7 @@ public class ItineraryPage {
 	public void clearContent() {
 		itineraryPanel.setVisible(false);
 		btnRouteItinerary.setVisible(false);
+		ItineraryCommon.routeBriefPanel.setVisible(false);
 	}
 
 	public void panelsView() {

@@ -2,6 +2,8 @@ package com.ruvego.project.client;
 
 import java.util.Date;
 
+import javax.swing.text.html.StyleSheet.BoxPainter;
+
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -33,7 +35,7 @@ public class CreateItinerary {
 	private static String ITINERARY_NAME = "";
 	private static String NUM_DAYS = "";
 	//private static Date START_DATE;
-	//private static boolean FROM_BOX_PAGE = false;
+	private static boolean FROM_BOX_PAGE = false;
 
 	private static PopupPanel popUpPanel;
 	private static VerticalPanel createItineraryPanel;
@@ -133,12 +135,23 @@ public class CreateItinerary {
 					return;
 				}
 				
+				//TODO This is not efficient. Should be written in one shot since we have all the data. Shouldnt be done in a loop
+				if (FROM_BOX_PAGE == true) {
+					for (int i = 0; i < RuvegoBoxPage.boxValueCount; i++) {
+						Ruvego.getResultsWriteService().addEntry(ItineraryState.ITINERARY_NAME, "Day " + (i + 1),
+								(String)ResultsDataGridView.htmlName.getLayoutData(), 
+								LoginModule.getUsername(), callbackAddEntry);
+
+					}
+				}
+				
 				Ruvego.setItineraryText(ITINERARY_NAME);
+				ItineraryState.setName(ITINERARY_NAME);
+				
 				
 				History.newItem("itineraryPage/" + ITINERARY_NAME);
-				createItinerary();
+//				/createItinerary();
 				
-				ItineraryState.setName(ITINERARY_NAME);
 				
 				System.out.println("Client: Successfullly created itinerary");
 
@@ -170,7 +183,6 @@ public class CreateItinerary {
 					ITINERARY_NAME = txtBoxName.getText();
 					
 					Ruvego.getResultsWriteService().writeCreateItinerary(createItineraryPacket, callbackCreateItinerary);
-
 				}
 
 			}
@@ -216,12 +228,14 @@ public class CreateItinerary {
 		panelsView();
 		vNumDaysPanel.setVisible(true);
 		lblStartDate.setText("Start Date");
+		FROM_BOX_PAGE = false;
 	}
 	
 	public void panelsOneDayView() {
 		panelsView();
 		vNumDaysPanel.setVisible(false);
 		lblStartDate.setText("Date");
+		FROM_BOX_PAGE = true;
 		NUM_DAYS = "1";
 	}
 
