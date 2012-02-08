@@ -132,8 +132,8 @@ public class LoginModule {
 		loginPopUpPanel.add(loginDetails);
 		logoutPopUpPanel.add(logoutDetails);
 
-		Ruvego.getRootPanel().add(loginPopUpPanel);
-		Ruvego.getRootPanel().add(logoutPopUpPanel);
+		Ruvego.getRootPanel().add(loginPopUpPanel, 0, 0);
+		Ruvego.getRootPanel().add(logoutPopUpPanel, 0, 0);
 
 		loginDetails.setStyleName("loginDetailsPanel");
 		logoutDetails.setStyleName("loginDetailsPanel");

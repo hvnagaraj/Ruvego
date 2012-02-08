@@ -135,26 +135,16 @@ public class CreateItinerary {
 					return;
 				}
 				
-				//TODO This is not efficient. Should be written in one shot since we have all the data. Shouldnt be done in a loop
-				if (FROM_BOX_PAGE == true) {
-					for (int i = 0; i < RuvegoBoxPage.boxValueCount; i++) {
-						Ruvego.getResultsWriteService().addEntry(ItineraryState.ITINERARY_NAME, "Day " + (i + 1),
-								(String)ResultsDataGridView.htmlName.getLayoutData(), 
-								LoginModule.getUsername(), callbackAddEntry);
-
-					}
-				}
-				
 				Ruvego.setItineraryText(ITINERARY_NAME);
 				ItineraryState.setName(ITINERARY_NAME);
 				
-				
-				History.newItem("itineraryPage/" + ITINERARY_NAME);
-//				/createItinerary();
-				
-				
+				/* Should be done after setting the itinerary name */
+				if (FROM_BOX_PAGE == true) {
+					RuvegoBoxPage.writeDataToServer();
+				} else {
+					History.newItem("itineraryPage/" + ITINERARY_NAME);
+				}
 				System.out.println("Client: Successfullly created itinerary");
-
 			}
 		};
 

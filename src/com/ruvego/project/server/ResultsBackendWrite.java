@@ -546,4 +546,21 @@ public class ResultsBackendWrite extends RemoteServiceServlet implements Results
 		return true;
 	}
 
+	@Override
+	public boolean addEntries(String itineraryName, String day,
+			String[] objectIdList, String username) {
+		System.out.println("Itinerary : " + itineraryName + " for " + day + " for user : " + username);
+		BasicDBObject update = new BasicDBObject();
+		System.out.println("Length : " + objectIdList.length);
+		for (int i = 0; i < objectIdList.length; i++) {
+			update.append("Day " + day, new ObjectId(objectIdList[i]));
+			System.out.println("Id : " + objectIdList[i].toString());
+		}
+
+		/* Update Category and SubCategory */
+		connectDBAndUpdate("Itinerary", new BasicDBObject().append("name", itineraryName), new BasicDBObject().append("$addToSet", update));
+
+		return true;
+	}
+
 }

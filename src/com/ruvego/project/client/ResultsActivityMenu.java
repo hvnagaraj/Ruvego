@@ -66,7 +66,8 @@ public class ResultsActivityMenu {
 			@Override
 			public void onClick(ClickEvent event) {
 				menuHide();
-				String preparedText = prepareEntryForInsert(ResultsDataGridView.htmlName.getText(), ResultsDataGridView.htmlAddress.getText());
+				String preparedText = prepareEntryForInsert(ResultsDataGridView.htmlName.getText(), ResultsDataGridView.htmlAddress.getText(),
+						(String)ResultsDataGridView.htmlName.getLayoutData());
 				Ruvego.insertItem(preparedText);
 			}
 		});
@@ -158,8 +159,8 @@ public class ResultsActivityMenu {
 		menuHide();
 	}
 
-	protected String prepareEntryForInsert(String name, String address) {
-		return (name + "<;>" + address);
+	protected String prepareEntryForInsert(String name, String address, String objectId) {
+		return (name + "<;>" + address + "<;>" + objectId);
 	}
 
 	private static void setupAddToItineraryText(String text) { 

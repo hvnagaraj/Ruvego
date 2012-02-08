@@ -50,11 +50,17 @@ public class BoxMenu {
 		lblCreateItinerary.setStyleName("menuItemText");
 		lblCreateItinerary.setWidth("100%");
 		
+		Label lblOpenItinerary = new Label("Open saved Itinerary");
+		lblOpenItinerary.setStyleName("menuItemText");
+		lblOpenItinerary.setWidth("100%");
+
+		
 		popUpPanel.add(menuInputPanel);
 		RootPanel.get().add(popUpPanel);
 		RootPanel.get().setWidgetPosition(popUpPanel, 5, imgIcon.getAbsoluteTop() + imgIcon.getOffsetHeight() + 4);
 		
 		menuInputPanel.add(lblCreateItinerary);
+		menuInputPanel.add(lblOpenItinerary);
 		
 		imgIcon.addClickHandler(new ClickHandler() {
 			
@@ -76,6 +82,14 @@ public class BoxMenu {
 				
 				createItinerary = CreateItinerary.getPage();
 				createItinerary.panelsMultiDayView();
+			}
+		});
+		
+		lblOpenItinerary.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				menuHide();
 			}
 		});
 		

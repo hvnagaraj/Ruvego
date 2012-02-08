@@ -27,6 +27,7 @@ import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.maps.client.overlay.Marker;
 import com.google.gwt.maps.client.overlay.Overlay;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -80,6 +81,7 @@ public class DayActivityPlan {
 
 	private static Overlay srcMarker;
 	private static Overlay dstMarker;
+	
 
 	private class BoxResultSrcDst {
 		private String ADDRESS = "";
@@ -306,13 +308,13 @@ public class DayActivityPlan {
 		}
 	}
 
-	public void addResults(String[] nameList, String[] addressList, int count) {
+	public void addResults(String[] nameList, String[] addressList, String[] objectIdList, int count) {
 		/* Clear the grid before forming the list */
 
 		for (int i = 0; i < count; i++) {
 			System.out.println("In loop of : " + i + " Total count : " + count);
-
-			addEntry(nameList[i], addressList[i]);
+			System.out.println("Name : " + nameList[i] + " Address : " + addressList[i] + " ID : " + objectIdList[i]);
+			addEntry(nameList[i], addressList[i], objectIdList[i]);
 
 		}
 
@@ -320,7 +322,7 @@ public class DayActivityPlan {
 		TOTAL_COUNT_IN_PLAN += count;
 	}
 
-	public void addEntry(String name, String address) {
+	public void addEntry(String name, String address, String objectId) {
 		boxResult = new BoxResult();
 
 		boxResult.boxResultPanel.setSize("100%", 100 + "px");
@@ -341,6 +343,7 @@ public class DayActivityPlan {
 		boxResult.boxResultPanel.add(boxResult.lblPosition, BOX_RESULTS_INDENT, 8);
 
 		boxResult.name = new HTML(name);
+		boxResult.name.setLayoutData(objectId);
 		boxResult.name.setStyleName("greyText");
 		boxResult.boxResultPanel.add(boxResult.name, BOX_RESULTS_INDENT + boxResult.img.getOffsetWidth() + 5, 8);
 
@@ -377,7 +380,6 @@ public class DayActivityPlan {
 			public void onClick(ClickEvent event) {
 				Image img = (Image) event.getSource();
 				ItineraryState.setEntry(DayActivityPlan.this, (Integer)img.getLayoutData());
-				//		BoxResult.this.address.setText("fdsad");
 				System.out.println("Clicked delete for : " + (Integer)img.getLayoutData());
 				Ruvego.getMapWidget().clearOverlays();
 				ItineraryCommon.showConfirmPanel();
@@ -801,6 +803,21 @@ public class DayActivityPlan {
 		lblDayOneInfo.setWidth("100%");
 		addToGrid(lblDayOneInfo);//, 0);
 		DAY_INFO_PRESENT = 1;
+	}
+
+	public void writeDataToServer() {
+		assert(RuvegoBoxPage.boxValueCount == TOTAL_COUNT_IN_PLAN);
+		
+		String[] objectIdList = new String[TOTAL_COUNT_IN_PLAN];
+		
+		for (int i = 0; i < RuvegoBoxPage.boxValueCount; i++) {
+			objectIdList[i] = (String)boxResultLL.get(i).name.getLayoutData();
+			System.out.println("Object id : " + objectIdList[i]);
+		}
+		Ruvego.getResultsWriteService().addEntries(ItineraryState.ITINERARY_NAME, "1",
+				objectIdList, 
+				LoginModule.getUsername(), RuvegoBoxPage.callbackAddEntry);
+
 	}
 
 }

@@ -8,6 +8,7 @@ import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -37,6 +38,9 @@ public class RuvegoBoxPage {
 	private static HTML htmlBoxClickHere;
 	
 	private static ItineraryCommon itineraryCommon;
+	
+	protected static AsyncCallback<Boolean> callbackAddEntry;
+
 
 	private RuvegoBoxPage() {
 		System.out.println("Creating an object of type RuvegoBoxPage");
@@ -64,7 +68,7 @@ public class RuvegoBoxPage {
 			}
 		});
 
-		htmlBoxItineraryInfo1 = new HTML("*To plan your multi-day activities, create an itinerary using the menu.");
+		htmlBoxItineraryInfo1 = new HTML("* To plan your multi-day activities, create an itinerary using the menu.");
 		htmlBoxClickHere = new HTML("<a href=\"javascript:undefined;\">Click Here</a>");
 		htmlBoxItineraryInfo2 = new HTML("to save this as a 1-day itinerary");
 
@@ -98,6 +102,23 @@ public class RuvegoBoxPage {
 				}
 			}
 		});
+		
+		callbackAddEntry = new AsyncCallback<Boolean>() {
+			
+			@Override
+			public void onSuccess(Boolean result) {
+				if (result == false) {
+					Ruvego.errorDisplayWithTimer("Unable to save the itinerary");
+					return;
+				}
+				History.newItem("itineraryPage/" + ItineraryState.ITINERARY_NAME);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Ruvego.errorDisplayWithTimer("Server returned an error when trying to save the itinerary. Try again after some time");
+			}
+		};
 	}
 
 
@@ -125,17 +146,20 @@ public class RuvegoBoxPage {
 
 			String[] nameList = new String[boxValueCount];
 			String[] addressList = new String[boxValueCount];
+			String[] objectIdList = new String[boxValueCount];
 
 			String[] fields;
 			for (int i = 0; i < boxValueCount; i++) {
 				fields = Ruvego.parseString(entry[i], "<;>");
 				nameList[i] = fields[0];
 				addressList[i] = fields[1];
+				objectIdList[i] = fields[2];
+				System.out.println("ID : --------------- : " + objectIdList[i]);
 			}
 
 			boxPlan = new DayActivityPlan(vPanel);
 			boxPlan.setupSrcBoxPanel();
-			boxPlan.addResults(nameList, addressList, boxValueCount);
+			boxPlan.addResults(nameList, addressList, objectIdList, boxValueCount);
 			boxPlan.dayName = "Box";
 			boxPlan.setupDstBoxPanel();
 		}
@@ -190,5 +214,10 @@ public class RuvegoBoxPage {
 		htmlBoxItineraryInfo2.setVisible(false);
 		Ruvego.errorDisplayClear();
 		Ruvego.setMapsPosition(0, 0);
+	}
+
+
+	public static void writeDataToServer() {
+		boxPlan.writeDataToServer();
 	}
 }

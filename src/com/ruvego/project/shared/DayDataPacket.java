@@ -10,13 +10,15 @@ public class DayDataPacket implements Serializable {
 	protected int numEntries;
 	protected String[] name;
 	protected String[] address;
+	protected String[] objectId;
 
 	public DayDataPacket() {
 	}
 
-	public DayDataPacket(int numEntries, String[] name, String[] address) {
+	public DayDataPacket(int numEntries, String[] name, String[] address, String[] objectId) {
 		this.numEntries = numEntries;
 		this.name = name;
 		this.address = address;
+		this.objectId = objectId;
 	}
 }

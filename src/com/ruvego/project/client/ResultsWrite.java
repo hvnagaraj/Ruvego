@@ -16,4 +16,7 @@ public interface ResultsWrite extends RemoteService {
 
 	boolean addEntry(String itineraryName, String day, String objectId,
 			String username);
+
+	boolean addEntries(String itineraryName, String day, String[] objectIdList,
+			String username);
 }

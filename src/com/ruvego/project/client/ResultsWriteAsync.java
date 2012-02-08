@@ -19,4 +19,7 @@ public interface ResultsWriteAsync {
 
 	void addEntry(String itineraryName, String day, String objectId,
 			String username, AsyncCallback<Boolean> callbackAddEntry);
+
+	void addEntries(String itineraryName, String day, String[] objectIdList,
+			String username, AsyncCallback<Boolean> callbackAddEntry);
 }

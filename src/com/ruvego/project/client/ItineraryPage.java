@@ -225,6 +225,7 @@ public class ItineraryPage {
 		DateTimeFormat format = DateTimeFormat.getFormat("MM/dd/yyyy");
 		Date date = format.parse(result.getStartDate());
 
+		ItineraryState.setName(result.getItineraryName());
 		ItineraryState.setNumDays(result.getNumDays());
 		/* Clear previous itinerary entries */
 		vPanel.clear();
@@ -250,7 +251,7 @@ public class ItineraryPage {
 			}
 
 			if (result.getNumEntries(i) != 0) {
-				itineraryPlan[i].addResults(result.getNameList(i), result.getAddressList(i), result.getNumEntries(i));
+				itineraryPlan[i].addResults(result.getNameList(i), result.getAddressList(i), result.getObjectIdList(i), result.getNumEntries(i));
 			}
 
 			if (i == (result.getNumDays() - 1)) {

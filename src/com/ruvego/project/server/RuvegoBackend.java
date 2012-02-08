@@ -436,56 +436,40 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 
 		while(content.hasNext()) {
 			DBObject data = content.next();
-			System.out.println("found------------------------------");
 
 			int numDays = Integer.parseInt((String) data.get("numdays"));
-			dataPacket = new ItineraryDataPacket(numDays, (String)data.get("startdate"), 0);
+			dataPacket = new ItineraryDataPacket(itineraryName, numDays, (String)data.get("startdate"), 0);
 
 			String[] temp = new String[2];
 			for (int i = 0; i < numDays; i++) {
 				BasicDBList activityList = (BasicDBList) data.get("Day " + (i + 1));
 				
 				if (activityList == null || activityList.size() == 0) {
-					dataPacket.setData(i, 0, null, null);
+					dataPacket.setData(i, 0, null, null, null);
 					continue;
 				}
 
 				String[] nameList = new String[activityList.size()];
 				String[] addressList = new String[activityList.size()];
+				String[] objectIdList = new String[activityList.size()];
 				for (int j = 0; j < activityList.size(); j++) {
-					temp = getActivityNameAddress(activityList.get(j));
+					temp = getActivityNameAddress(activityList.get(j), (i + 1));
 					nameList[j] = temp[0];	
 					addressList[j] = temp[1];
+					objectIdList[j] = temp[2];
 				}
-				dataPacket.setData(i, activityList.size(), nameList, addressList);
+				dataPacket.setData(i, activityList.size(), nameList, addressList, objectIdList);
 			}
 		}
-		return dataPacket;
-
-
-/*
-		String[] tempName = new String[2];
-		tempName[0] = "nagaraj";
-		tempName[1] = "hiiiiii";
-
-		System.out.println("Itinerary Name : " + itineraryName);
-
-		String[] tempAddress = new String[2];
-		tempAddress[0] = "nagaraj";
-		tempAddress[1] = "hiiiiii";
-
-		ItineraryDataPacket tempPacket = new ItineraryDataPacket(2, "11/12/2011", 0);
-
-		for (int i = 0; i < 2; i++) {
-			tempPacket.setData(i, 2, tempName, tempAddress);
-		}
-		return tempPacket;
-		*/
 		
+		if (dataPacket == null) {
+			dataPacket = new ItineraryDataPacket(1);
+		}
+		return dataPacket;
 	}
 
-	protected String[] getActivityNameAddress(Object object) {
-		String[] nameAddress = new String[2];
+	protected String[] getActivityNameAddress(Object object, int day) {
+		String[] nameAddressID = new String[3];
 
 		connectDB("Activity");
 
@@ -498,11 +482,12 @@ public class RuvegoBackend extends RemoteServiceServlet implements ResultsFetch 
 		while(content.hasNext()) {
 			DBObject data = content.next();
 
-			nameAddress[0] = (String) data.get("name");
-			nameAddress[1] = (String) data.get("address");
+			nameAddressID[0] = (String) data.get("name");
+			nameAddressID[1] = (String) data.get("address");
+			nameAddressID[2] = (String) data.get("Day " + day);
 		}
 
-		return nameAddress;
+		return nameAddressID;
 	}
 	
 
