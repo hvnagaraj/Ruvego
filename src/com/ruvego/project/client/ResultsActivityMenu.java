@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion.Static;
 
 public class ResultsActivityMenu {
 	private static ResultsActivityMenu page;
@@ -159,7 +160,7 @@ public class ResultsActivityMenu {
 		menuHide();
 	}
 
-	protected String prepareEntryForInsert(String name, String address, String objectId) {
+	protected static String prepareEntryForInsert(String name, String address, String objectId) {
 		return (name + "<;>" + address + "<;>" + objectId);
 	}
 

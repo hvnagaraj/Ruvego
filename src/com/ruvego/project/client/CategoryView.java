@@ -73,12 +73,11 @@ public abstract class CategoryView {
 		int height = Ruvego.getClientHeight();
 
 		Ruvego.errorDisplayAlignments();
-
+		resultsPanel.setPixelSize(width - Ruvego.getIndent(), ACTIVITY_PANEL_FIXED_HEIGHT);
 		Ruvego.getRootPanel().setWidgetPosition(resultsPanel, Ruvego.getIndent(),
 				height - Ruvego.getFooterHeight() - ACTIVITY_PANEL_FIXED_HEIGHT);
 		Ruvego.getMapsPanel().setWidgetPosition(RuvegoHomePage.getLblHierPanel(), 0, resultsPanel.getAbsoluteTop() - Ruvego.getMapsPanel().getAbsoluteTop() -
 					RuvegoHomePage.getLblHierPanel().getOffsetHeight());
-		resultsPanel.setPixelSize(width - Ruvego.getIndent(), ACTIVITY_PANEL_FIXED_HEIGHT);
 	}
 
 	private void setLblHier() {
@@ -179,7 +178,7 @@ public abstract class CategoryView {
 					}
 					gridPanel.setCellPadding(11);
 					resultsPanel.add(gridPanel);
-					panelAlignments();
+					panelResizeAlignments();
 				}
 			};
 		}
@@ -210,8 +209,8 @@ public abstract class CategoryView {
 	protected void panelAlignments() {
 		Ruvego.setMapsPosition(0, 0);
 		Ruvego.setMinimumPageHeight(RuvegoHomePage.HOMEPAGE_PAGE_HEIGHT);
-		panelResizeAlignments();
 		Ruvego.panelAlignments();
+		panelResizeAlignments();
 	}
 
 	private void categoryOnClick(String inputLine) {

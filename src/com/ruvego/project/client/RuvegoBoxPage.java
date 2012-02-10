@@ -125,24 +125,20 @@ public class RuvegoBoxPage {
 	public void fetchBoxResults() {
 		Ruvego.setMapsPosition(DayActivityPlan.BOX_PANEL_WIDTH, BOTTOM_BLANK_HEIGHT);
 		
-		String cookieItemCount = Cookies.getCookie("itemcount");
-
 		/* Clearing any previous Box or Itinerary entries */
 		vPanel.clear();
 		Ruvego.getMapWidget().clearOverlays();
 		ItineraryCommon.bounds = LatLngBounds.newInstance();
 
-		if (cookieItemCount != null && Integer.parseInt(cookieItemCount) != 0) {
+		String cookieItemCount = Ruvego.readCookie("itemcount");
+
+		if (Integer.parseInt(cookieItemCount) != 0) {
 			boxValueCount = Integer.parseInt(cookieItemCount);
 
 			System.out.println("No of items in the cookie : " + boxValueCount);
-			if (boxValueCount > 25) {
-				System.out.println("Box has more than 25 items");
-				return;
-			}
-
+			System.out.println(Ruvego.readCookie("itemsdata"));
 			String[] entry;
-			entry = Ruvego.parseString(Cookies.getCookie("itemsdata"), "<;;>");
+			entry = Ruvego.parseString(Ruvego.readCookie("itemsdata"), "<;;>");
 
 			String[] nameList = new String[boxValueCount];
 			String[] addressList = new String[boxValueCount];
@@ -157,11 +153,13 @@ public class RuvegoBoxPage {
 				System.out.println("ID : --------------- : " + objectIdList[i]);
 			}
 
-			boxPlan = new DayActivityPlan(vPanel);
+			boxPlan = new DayActivityPlan(vPanel, true);
 			boxPlan.setupSrcBoxPanel();
 			boxPlan.addResults(nameList, addressList, objectIdList, boxValueCount);
 			boxPlan.dayName = "Box";
 			boxPlan.setupDstBoxPanel();
+		} else {
+			Ruvego.errorDisplayWithTimer("No entries in the Box. Redirecting to Home Page");
 		}
 
 		panelAlignments();
@@ -220,4 +218,5 @@ public class RuvegoBoxPage {
 	public static void writeDataToServer() {
 		boxPlan.writeDataToServer();
 	}
+
 }

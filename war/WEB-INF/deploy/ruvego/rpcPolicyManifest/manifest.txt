@@ -1,4 +1,2 @@
 # Module ruvego
 # RPC service class, partial path of RPC policy file
-com.ruvego.project.client.ResultsWrite, 46AB4A0253E0A72721DB92E50BDB41D0.gwt.rpc
-com.ruvego.project.client.ResultsFetch, 12F599E8A0CDC34D48EAC02584A21BF5.gwt.rpc

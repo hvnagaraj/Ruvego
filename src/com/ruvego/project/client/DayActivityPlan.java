@@ -26,6 +26,7 @@ import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.geom.LatLngBounds;
 import com.google.gwt.maps.client.overlay.Marker;
 import com.google.gwt.maps.client.overlay.Overlay;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -66,6 +67,8 @@ public class DayActivityPlan {
 
 	int SRC_PANEL = 0;
 	int DST_PANEL = 0;
+	
+	private boolean isBoxPage;
 
 	final static int BOX_RESULTS_INDENT = 5;
 	final static int BOX_RESULTS_SPACING = 5;
@@ -138,8 +141,8 @@ public class DayActivityPlan {
 	private class BoxResult {
 		private AbsolutePanel boxResultPanel = new AbsolutePanel();
 		private Label lblPosition;
-		private HTML name;
-		private Label address;
+		private HTML name = new HTML();
+		private Label address = new HTML();
 		private HTML routeInfo;
 		private Image img;
 		private Image btnDel;
@@ -231,10 +234,12 @@ public class DayActivityPlan {
 	}
 
 
-	public DayActivityPlan(VerticalPanel panel) {
+	public DayActivityPlan(VerticalPanel panel, boolean isBoxPage) {
 		grid = new Grid(0, 1);
 		panel.add(grid);
 		grid.setWidth("100%");
+		
+		this.isBoxPage = isBoxPage;
 
 		/* Linked List initializations */
 		boxResultLL = new LinkedList<DayActivityPlan.BoxResult>();
@@ -342,12 +347,13 @@ public class DayActivityPlan {
 		boxResult.lblPosition.setWidth("34px");
 		boxResult.boxResultPanel.add(boxResult.lblPosition, BOX_RESULTS_INDENT, 8);
 
-		boxResult.name = new HTML(name);
+		boxResult.name.setText(name);
 		boxResult.name.setLayoutData(objectId);
 		boxResult.name.setStyleName("greyText");
 		boxResult.boxResultPanel.add(boxResult.name, BOX_RESULTS_INDENT + boxResult.img.getOffsetWidth() + 5, 8);
 
-		boxResult.address = new Label(address, true);
+		boxResult.address.setText(address);
+		boxResult.address.setWordWrap(true);
 		waypoint = new Waypoint(boxResult.address.getText());
 		waypointLL.add(waypoint);
 		Ruvego.getGeocode().getLatLng(boxResult.address.getText(), ItineraryCommon.mapsCallback);
@@ -410,6 +416,13 @@ public class DayActivityPlan {
 		waypointLL.remove(ItineraryState.getEntryNum());
 		TOTAL_COUNT_IN_PLAN--;
 
+		if (isBoxPage == true) {
+			deleteEntryFromCookie(freeBoxResult.name.getText(), freeBoxResult.address.getText(), 
+					(String)freeBoxResult.name.getLayoutData());
+		} else {
+			
+		}
+
 		freeBoxResult.boxResultPanel.removeFromParent();
 		freeBoxResult = null;
 
@@ -427,6 +440,12 @@ public class DayActivityPlan {
 		}
 
 		reAssignLabels();
+		
+	}
+
+	private void deleteEntryFromCookie(String name, String address, String objectId) {
+		String preparedText = ResultsActivityMenu.prepareEntryForInsert(name, address, objectId);
+		Ruvego.deleteEntryFromCookie(preparedText, "itemsdata");
 	}
 
 	protected void reorganizePositions(int currentPos, int newPos) {

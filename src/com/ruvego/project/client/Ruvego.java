@@ -53,6 +53,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -165,7 +166,7 @@ public class Ruvego implements EntryPoint {
 		itineraryNamePanel.setVisible(true);
 		itineraryNamePanelAlignments();
 	}
-	
+
 	public static void clearItineraryText() {
 		itineraryNamePanel.setVisible(false);
 	}
@@ -219,37 +220,71 @@ public class Ruvego implements EntryPoint {
 			return;
 		}
 
-		String cookieValue = Cookies.getCookie("itemsdata");
-		if (cookieValue == null) {
-			Cookies.setCookie("itemsdata", data, expires, null, "/", false);
+		String cookieValue = readCookie("itemsdata");	
+		String writeData;
+		if (boxCount == 0) {
+			cookieValue = "";
+			writeData = data;
+		} else {
+			/* <;;> between entries and <;> between fields of an entry */
+			writeData = cookieValue + "<;;>" + data;
+		}
 
-			boxCount++;
-			lblBoxCount.setText(String.valueOf(boxCount));
-			Cookies.setCookie("itemcount", lblBoxCount.getText(), expires, null, "/", false);
-			boxInfo("Entry added to Box");
-			System.out.println("First Cookie entry added");
-			return;
-		} 
-
+		System.out.println(writeData);
 		boolean entryPresent = (cookieValue.toLowerCase().indexOf(data.toLowerCase()) >= 0);
 		if (entryPresent == true) {
 			boxInfo("Entry already in the box");
 			System.out.println("Entry already present in the cookie");
 			return;
 		}
-
-		String cookieCount = Cookies.getCookie("itemcount");
-
-		boxCount = Integer.parseInt(cookieCount);
-		boxCount++;
-
-		lblBoxCount.setText(String.valueOf(boxCount));
-		Cookies.setCookie("itemcount", lblBoxCount.getText(), expires, null, "/", false);
-
-		/* <;;> between entries and <;> between fields of an entry */
-		Cookies.setCookie("itemsdata", cookieValue + "<;;>" + data, expires, null, "/", false);
+		
+		incCount();
+		setCookie("itemsdata", writeData);
+		
 		boxInfo("Entry added to Box");
 		System.out.println("Cookie entry added");
+	}
+
+	private static void incCount() {
+		boxCount++;
+		lblBoxCount.setText(String.valueOf(boxCount));
+		
+		setCookie("itemcount", String.valueOf(boxCount));
+	}
+
+	private static void setCookie(String cookieName, String data) {
+		Cookies.setCookie(cookieName, data, expires, null, "/", false);	
+	}
+	
+	protected static void deleteEntryFromCookie(String text, String cookieName) {
+		String writeData = null;
+		String cookieValue = readCookie("itemsdata");
+		
+		assert(cookieValue.indexOf(text) != -1);
+		
+		if (cookieValue.indexOf(text + "<;;>") != -1) {
+			System.out.println("Deleting :" + text + "<;;>");
+			writeData = cookieValue.replaceFirst(text + "<;;>", "");
+		} else if (cookieValue.indexOf("<;;>" + text) != -1) {
+			System.out.println("Deleting :" + "<;;>" + text);
+			writeData = cookieValue.replaceFirst("<;;>" + text, "");
+		} else {
+			assert(false);
+		}
+		
+		
+		decCount();
+		setCookie(cookieName, writeData);
+	}
+
+	private static void decCount() {
+		boxCount--;
+		setCookie("itemcount", String.valueOf(boxCount));
+		lblBoxCount.setText(String.valueOf(boxCount));
+	}
+
+	protected static String readCookie(String text) {
+		return(Cookies.getCookie(text));
 	}
 
 	private static void boxInfo(String string) {		
@@ -334,8 +369,8 @@ public class Ruvego implements EntryPoint {
 		resultsWriteService = GWT.create(ResultsWrite.class);
 
 		//TODO change before commit. Must be authenticateUser()
-		//userAuthenticated();
-		authenticateUser();
+		userAuthenticated();
+		//authenticateUser();
 	}
 
 	private void authenticateUser() {
@@ -403,7 +438,7 @@ public class Ruvego implements EntryPoint {
 		dialogbox.setWidget(dialogBoxContents);
 		dialogbox.center();
 		dialogBoxContents.setSpacing(4);
-		
+
 		setMinimumPageHeight(650);
 	}
 
@@ -629,17 +664,25 @@ public class Ruvego implements EntryPoint {
 	}
 
 	public static int getClientHeight() {
-		if (Window.getClientHeight() > MIN_PAGE_HEIGHT) {
-			return(Window.getClientHeight());
+		Window.enableScrolling(false);
+		int height = Window.getClientHeight();
+		if (height > MIN_PAGE_HEIGHT) {
+			Window.enableScrolling(true);
+			return(height);
 		} else {
+			Window.enableScrolling(true);
 			return(MIN_PAGE_HEIGHT);
 		}
 	}
 
 	public static int getClientWidth() {
-		if (Window.getClientWidth() > 1000) {
-			return(Window.getClientWidth());
+		Window.enableScrolling(false);
+		int width = Window.getClientWidth();
+		if (width > 1000) {
+			Window.enableScrolling(true);
+			return(width);
 		} else {
+			Window.enableScrolling(true);
 			return(1000);
 		}
 	}
@@ -681,7 +724,7 @@ public class Ruvego implements EntryPoint {
 		secondHeaderPanel.add(itineraryNamePanel);
 
 		itineraryNamePanelAlignments();
-		
+
 		itineraryNamePanel.setVisible(false);
 	}
 
@@ -811,10 +854,8 @@ public class Ruvego implements EntryPoint {
 		listBoxWithin.addItem("75 miles");
 		listBoxWithin.addItem("50 miles");
 		listBoxWithin.addItem("25 miles");
-		listBoxWithin.addItem("10 miles");
 		listBoxWithin.setSelectedIndex(WITHIN_MILES_INDEX);
 		headerPanel.add(listBoxWithin, 372, 45);
-		listBoxWithin.setHeight("30px");
 		listBoxWithin.setVisibleItemCount(1);
 
 		lblWithin = new Label("within ");
@@ -853,16 +894,17 @@ public class Ruvego implements EntryPoint {
 			}
 		});
 
-		lblBoxCount = new Label("0");
+		lblBoxCount = new Label();
 		/* Cookie retrieval */
-		String cookieValue = Cookies.getCookie("itemcount");
+		String cookieValue = readCookie("itemcount");
 		if (cookieValue == null) {
-			Cookies.setCookie("itemcount", lblBoxCount.getText(), expires, null, "/", false);
 			lblBoxCount.setText("0");
+			setCookie("itemcount", lblBoxCount.getText());
+			setCookie("itemsdata", "");
 			boxCount = 0;
 		} else {
-			boxCount = Integer.parseInt(Cookies.getCookie("itemcount"));
-			lblBoxCount.setText(Cookies.getCookie("itemcount"));			
+			boxCount = Integer.parseInt(readCookie("itemcount"));
+			lblBoxCount.setText(readCookie("itemcount"));			
 		}
 
 		lblBoxCount.setStyleName("boxText");
@@ -938,7 +980,9 @@ public class Ruvego implements EntryPoint {
 
 	protected void placeChoose() {
 		if (suggestBox.getText().equalsIgnoreCase("")) {
-			homePage.clearContent();
+			if (homePage != null) {
+				homePage.clearContent();
+			}
 			errorDisplay("Enter a place name to search");
 			return;
 		}
@@ -984,7 +1028,7 @@ public class Ruvego implements EntryPoint {
 
 	public static void userLoggedOut() {
 		clearItineraryText();
-		
+
 		Cookies.removeCookie("itinerary", "/");
 	}
 

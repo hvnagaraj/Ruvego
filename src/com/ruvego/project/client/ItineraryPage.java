@@ -237,7 +237,7 @@ public class ItineraryPage {
 
 		for (int i = 0; i < result.getNumDays(); i++) {
 			System.out.println("In loop : " + i);
-			itineraryPlan[i] = new DayActivityPlan(vPanel);
+			itineraryPlan[i] = new DayActivityPlan(vPanel, false);
 
 			itineraryPlan[i].dayName = "Day " + (i + 1);
 
@@ -315,7 +315,5 @@ public class ItineraryPage {
 				btnRouteItinerary.getOffsetWidth(), 
 				btnRouteItinerary.getAbsoluteTop() - btnRouteItineraryPopUpPanel.getOffsetHeight());
 	}
-
-
 
 }
